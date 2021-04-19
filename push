@@ -1,0 +1,6 @@
+cd src && zip -9 -r ../build/GG.love . && cd ..
+love.js -t GG -c build/GG.love build/browser
+cp build/love.css build/browser/theme
+rm build/browser/theme/bg.png
+cp build/index.html build/browser
+/Applications/butler/butler push build/browser fenoloftaleina/test:html
