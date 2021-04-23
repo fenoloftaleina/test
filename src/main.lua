@@ -1,18 +1,149 @@
-lf = love.filesystem
-ls = love.sound
-la = love.audio
-lp = love.physics
-lt = love.thread
-li = love.image
-lm = love.math
-lg = love.graphics
-lk = love.keyboard
 
-utils = require "utils"
-ls = require "love_sprites"
-flux = require "flux"
 
-player = {
+
+
+
+local spine = require "spine-love.spine"
+
+local skeleton
+
+local lsp = {}
+
+function lsp.prepare()
+
+end
+
+function lsp.update()
+
+end
+
+function lsp.add()
+
+end
+
+function lsp.draw()
+
+end
+
+
+
+-- load atlas, load skeleton data, and then build objects with skeleton and state on that
+
+function load_skeleton (file, animation, x, y, scale)
+	local loader = function (path) return love.graphics.newImage("data/" .. path) end
+	local atlas = spine.TextureAtlas.new(spine.utils.readFile("data/" .. file .. ".atlas"), loader)
+
+	local json = spine.SkeletonJson.new(spine.AtlasAttachmentLoader.new(atlas))
+	json.scale = scale or 1
+	local skeletonData = json:readSkeletonDataFile("data/" .. file .. ".json")
+	local skeleton = spine.Skeleton.new(skeletonData)
+	skeleton.x = x
+	skeleton.y = y
+	skeleton.scaleY = -1
+	skeleton:setToSetupPose()
+
+	local skeleton2 = spine.Skeleton.new(skeletonData)
+	skeleton2.x = x
+	skeleton2.y = y
+	skeleton2.scaleY = -1
+	skeleton2:setToSetupPose()
+
+	local stateData = spine.AnimationStateData.new(skeletonData)
+	local state = spine.AnimationState.new(stateData)
+	state:setAnimationByName(0, animation, true)
+
+	state:update(0.5)
+	state:apply(skeleton)
+
+	-- local stateData2 = spine.AnimationStateData.new(skeletonData)
+	local state2 = spine.AnimationState.new(stateData)
+	state2:setAnimationByName(0, "jump", true)
+
+	state2:update(0.5)
+	state2:apply(skeleton2)
+
+	return { state = state, skeleton = skeleton,
+  state2 = state2, skeleton2 = skeleton2
+}
+end
+
+function spine_load()
+	skeletonRenderer = spine.SkeletonRenderer.new(true)
+  skeleton = load_skeleton("eye", "idle", 400, 500)
+end
+
+local jumped = false
+local idle = true
+local t = 0
+local last_jump = 0
+
+function spine_update(dt)
+  t = t + dt
+
+	skeleton.state:update(dt)
+	skeleton.state2:update(dt)
+
+  if jumped then
+    last_jump = t
+    jumped = false
+  elseif (not idle) and t - last_jump > 0.8 then
+    skeleton.state:setAnimationByName(0, "idle", true)
+    idle = true
+  end
+end
+
+function spine_draw ()
+	-- love.graphics.setBackgroundColor(0, 0, 0, 255)
+	-- love.graphics.setColor(255, 255, 255)
+
+	skeleton.state:apply(skeleton.skeleton)
+	skeleton.skeleton:updateWorldTransform()
+
+	skeletonRenderer:draw(skeleton.skeleton)
+
+	skeleton.state2:apply(skeleton.skeleton2)
+	skeleton.skeleton2:updateWorldTransform()
+
+	skeletonRenderer:draw(skeleton.skeleton2)
+end
+
+function love.mousepressed (x, y, button, istouch)
+  jumped = true
+  idle = false
+  skeleton.state:setAnimationByName(0, "jump", false)
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local ls = love.sound
+local la = love.audio
+local lg = love.graphics
+local lk = love.keyboard
+
+local utils = require "utils"
+local ls = require "love_sprites"
+local flux = require "flux"
+
+require 'spine-love/spine'
+
+local player = {
   x = 630,
   y = 310,
   w = 100,
@@ -29,20 +160,22 @@ player = {
 local sprites = {}
 local chocolate_sprite = {}
 
-player_states = {}
-N = 15
+local player_states = {}
+local N = 15
 
-w = 0;
-h = 0;
+local w = 0;
+local h = 0;
 
-pyszneczekoladka = la.newSource("sounds/pyszneczekoladka.mp3", "static")
+local pyszneczekoladka = la.newSource("sounds/pyszneczekoladka.mp3", "static")
 
 local chocolates = {}
+
+local particles
 
 function love.load()
   lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
   love.window.setMode(800, 600, {msaa=4})
-  -- love.graphics.setLineStyle("smooth")
+  love.graphics.setLineStyle("smooth")
 
   w = lg.getWidth()
   h = lg.getHeight()
@@ -70,16 +203,27 @@ function love.load()
   ls.update(chocolate_sprite)
   ls.add(chocolate_sprite, "czekoladka1", 0, 0)
 
-  la.setEffect("my-chorus", {rate = 3, depth = 2, type = "chorus"})
-  pyszneczekoladka:setEffect("my-chorus")
+  -- la.setEffect("my-chorus", {rate = 3, depth = 2, type = "chorus"})
+  -- pyszneczekoladka:setEffect("my-chorus")
 
   flux.to(player, 0.2, {visibility = 1}):ease("expoin"):delay(0.2)
+
+
+  particles = lg.newParticleSystem(lg.newImage("images/gracz_animation1.png"))
+  particles:setParticleLifetime(0.7)
+  particles:setEmissionRate(15)
+  particles:setEmissionArea("uniform", 50, 50, 0, true)
+  particles:setLinearAcceleration(-20, 50, -50, 100)
+  particles:setColors(1, 1, 1, 0.1, 1, 1, 1, 0.5)
+
+
+  spine_load()
 end
 
-every_t = 0.04
-last_t = every_t
+local every_t = 0.04
+local last_t = every_t
 
-t = 0
+local t = 0
 
 function love.update(dt)
   t = t + dt
@@ -87,13 +231,18 @@ function love.update(dt)
   flux.update(dt)
   ls.update(sprites, dt)
 
+  spine_update(dt)
+  -- spine_animation:update(dt)
+
+  particles:update(dt)
+
   if lk.isDown("escape") then
     love.event.quit(0)
   end
 
-  a = 30
-  s = 6
-  m = 500
+  local a = 30
+  local s = 6
+  local m = 500
 
   if lk.isDown("a") or lk.isDown("left") then
     player.velocity.x = utils.clamp(-m, player.velocity.x - a, m)
@@ -192,6 +341,55 @@ function love.draw()
         vis)
     end
   end
+
+  lg.setColor(0.5, 0.5, 0.5, 1)
+  lg.setLineWidth(3)
+
+  -- lg.line(100, 100, 500, 100)
+  -- lg.arc("line", "open", 500, 150, 50, math.rad(0), math.rad(-90))
+  -- lg.line(550, 150, 550, 450)
+
+  local segments = {
+    -- 550, 50, 600, 100
+  }
+  local ox, oy, r  = 525, 75, 50
+  local x, y = ox, oy
+  segments[1] = x
+  segments[2] = y
+  for i=1,10 do
+    x = x + 10 / i
+    y = y + 10
+    segments[i * 2 + 1] = x
+    segments[i * 2 + 2] = y
+  end
+  lg.line(segments)
+
+
+  -- local n = 20
+  -- local step = 500 / n
+  -- local x1, y1, x2, y2
+  -- local sin = math.sin
+  -- local offset = 200
+  -- local sin_scale = 1000 / n
+  -- local sin_amplitude = 50
+  -- for i=1,n do
+  --   x1 = i * step
+  --   y1 = sin(i * sin_scale + t) * sin_amplitude
+  --   x2 = x1 + step
+  --   y2 = sin((i + 1) * sin_scale + t) * sin_amplitude
+  --   lg.line(x1 + offset, y1 + offset, x2 + offset, y2 + offset)
+  -- end
+
+
+  lg.draw(particles, 300, 300)
+
+
+
+
+  lg.setColor(1, 1, 1, 1)
+  spine_draw()
+  -- spine_animation:draw(400, 400)
+
 
   -- lg.pop()
 end

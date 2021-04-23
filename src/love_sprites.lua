@@ -1,5 +1,8 @@
 local ls = {}
 
+local lg = love.graphics
+local utils = require "utils"
+
 canvas_size = 500
 separator = 1
 
@@ -20,16 +23,17 @@ function batch_prepared(sprites)
 end
 
 
-function prepare_sprite_data(sprites, name, images)
-  sprites.sprites_data[name] = {
-    quads_data = {}
+function prepare_quad_data(sprites, name, images)
+  sprites.quads_data[name] = {
+    quad_objects = {}
   }
 
   if #images > 1 then
-    sprites.sprites_data[name].frames = #images
+    sprites.quads_data[name].frames = #images
   end
 
-  for i, image in ipairs(images) do
+  for i=1,#images do
+    image = images[i]
     w = image:getWidth()
     h = image:getHeight()
 
@@ -49,7 +53,7 @@ function prepare_sprite_data(sprites, name, images)
       lg.draw(image, sprites.current_atlas.x, sprites.current_atlas.y)
     end)
 
-    table.insert(sprites.sprites_data[name].quads_data, {
+    table.insert(sprites.quads_data[name].quad_objects, {
       quad = lg.newQuad(sprites.current_atlas.x, sprites.current_atlas.y, w, h, canvas_size, canvas_size),
       batch_id = sprites.current_atlas.batch_id
     })
@@ -71,15 +75,16 @@ end
 
 
 function ls.prepare(sprites, names, frame_t)
-  sprites.sprites_data = {}
+  sprites.quads_data = {}
   sprites.sprite_batches = {}
   sprites.current_atlas = {}
   sprites.current_atlas.batch_id = 0
   sprites.frame_t = frame_t or 0.1
   add_batch(sprites)
 
-  for i, name in ipairs(names) do
-    images = {}
+  for i=1,#names do
+    local name = names[i]
+    local images = {}
 
     if name:sub(-9) == "animation" then -- animation
       frame = 1
@@ -99,7 +104,7 @@ function ls.prepare(sprites, names, frame_t)
       table.insert(images, new_image(name))
     end
 
-    prepare_sprite_data(sprites, name, images)
+    prepare_quad_data(sprites, name, images)
 
   end
 
@@ -110,43 +115,46 @@ end
 
 
 function ls.update(sprites, dt)
-  for i, sprite_batch in ipairs(sprites.sprite_batches) do
-    sprite_batch:clear()
+  for i=1,#sprites.sprite_batches do
+    sprites.sprite_batches[i]:clear()
   end
 
-  for i, sprite_data in pairs(sprites.sprites_data) do
-    sprite_data.next_current_frame = nil
+  for i, quad_data in pairs(sprites.quads_data) do
+    quad_data.next_current_frame = nil
 
-    if sprite_data.current_frame then
-      sprite_data.current_frame_t = sprite_data.current_frame_t - dt
+    if quad_data.current_frame then
+      quad_data.current_frame_t = quad_data.current_frame_t - dt
 
-      if sprite_data.current_frame_t < 0 then
-        sprite_data.current_frame_t = sprite_data.current_frame_t + sprites.frame_t
-        sprite_data.current_frame = sprite_data.current_frame % sprite_data.frames + 1
+      if quad_data.current_frame_t < 0 then
+        quad_data.current_frame_t = quad_data.current_frame_t + sprites.frame_t
+        quad_data.current_frame = quad_data.current_frame % quad_data.frames + 1
       end
     end
   end
 end
 
 
+-- function
+
+
 function ls.add(sprites, name, x, y)
   quad_id = 1
 
-  if sprites.sprites_data[name].frames then
-    if not sprites.sprites_data[name].current_frame then
-      sprites.sprites_data[name].current_frame = 1
-      sprites.sprites_data[name].current_frame_t = sprites.frame_t
+  if sprites.quads_data[name].frames then
+    if not sprites.quads_data[name].current_frame then
+      sprites.quads_data[name].current_frame = 1
+      sprites.quads_data[name].current_frame_t = sprites.frame_t
     end
-    sprites.sprites_data[name].next_current_frame = sprites.sprites_data[name].current_frame
+    sprites.quads_data[name].next_current_frame = sprites.quads_data[name].current_frame
 
-    quad_id = sprites.sprites_data[name].current_frame
+    quad_id = sprites.quads_data[name].current_frame
   end
 
-  quad_data = sprites.sprites_data[name].quads_data[quad_id]
+  quad_object = sprites.quads_data[name].quad_objects[quad_id]
 
-  sprite_batch = sprites.sprite_batches[quad_data.batch_id]
+  sprite_batch = sprites.sprite_batches[quad_object.batch_id]
 
-  sprite_batch:add(quad_data.quad, x, y)
+  sprite_batch:add(quad_object.quad, x, y)
 end
 
 
@@ -156,13 +164,14 @@ function ls.draw(sprites, x, y, r, s)
   r = r or 0
   s = s or 1
 
-  for i, sprite_batch in ipairs(sprites.sprite_batches) do
+  for i=1,#sprites.sprite_batches do
+    local sprite_batch = sprites.sprite_batches[i]
     sprite_batch:flush()
     lg.draw(sprite_batch, x, y, r, s, s)
   end
 
-  for _, sprite_data in pairs(sprites.sprites_data) do
-    sprite_data.current_frame = sprite_data.next_current_frame
+  for _, quad_data in pairs(sprites.quads_data) do
+    quad_data.current_frame = quad_data.next_current_frame
   end
 end
 
