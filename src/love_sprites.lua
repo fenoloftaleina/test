@@ -77,6 +77,7 @@ end
 function ls.prepare(sprites, names, frame_t)
   sprites.quads_data = {}
   sprites.sprite_batches = {}
+  sprites.animations = {}
   sprites.current_atlas = {}
   sprites.current_atlas.batch_id = 0
   sprites.frame_t = frame_t or 0.1
@@ -119,42 +120,67 @@ function ls.update(sprites, dt)
     sprites.sprite_batches[i]:clear()
   end
 
-  for i, quad_data in pairs(sprites.quads_data) do
-    quad_data.next_current_frame = nil
-
-    if quad_data.current_frame then
-      quad_data.current_frame_t = quad_data.current_frame_t - dt
-
-      if quad_data.current_frame_t < 0 then
-        quad_data.current_frame_t = quad_data.current_frame_t + sprites.frame_t
-        quad_data.current_frame = quad_data.current_frame % quad_data.frames + 1
+  for i=1,#sprites.animations do
+    local animation = sprites.animations[i]
+    if not animation.dead then
+      animation.frame_t = animation.frame_t - dt
+      if animation.frame_t < 0 then
+        animation.frame_t = animation.frame_t + sprites.frame_t
+        animation.frame = animation.frame % animation.frames + 1
       end
     end
   end
 end
 
 
--- function
-
-
-function ls.add(sprites, name, x, y)
-  quad_id = 1
-
-  if sprites.quads_data[name].frames then
-    if not sprites.quads_data[name].current_frame then
-      sprites.quads_data[name].current_frame = 1
-      sprites.quads_data[name].current_frame_t = sprites.frame_t
-    end
-    sprites.quads_data[name].next_current_frame = sprites.quads_data[name].current_frame
-
-    quad_id = sprites.quads_data[name].current_frame
-  end
-
+function add_quad(sprites, name, x, y, quad_id)
   quad_object = sprites.quads_data[name].quad_objects[quad_id]
 
   sprite_batch = sprites.sprite_batches[quad_object.batch_id]
 
   sprite_batch:add(quad_object.quad, x, y)
+end
+
+
+function ls.add(sprites, name, x, y)
+  add_quad(sprites, name, x, y, 1)
+end
+
+
+function ls.add_animation(sprites, animation_id, x, y)
+  local animation = sprites.animations[animation_id]
+  add_quad(sprites, animation.name, x, y, animation.frame)
+end
+
+
+function ls.create_animation(sprites)
+  local new_animation_id = nil
+
+  for i=1,#sprites.animations do
+    if sprites.animations[i].dead then
+      new_animation_id = i
+      break
+    end
+  end
+
+  new_animation_id = new_animation_id or #sprites.animations + 1
+  sprites.animations[new_animation_id] = {}
+
+  return new_animation_id
+end
+
+function ls.play_animation(sprites, animation_id, name)
+  local animation = sprites.animations[animation_id]
+
+  animation.name = name
+  animation.frame = 1
+  animation.frames = sprites.quads_data[name].frames
+  animation.frame_t = sprites.frame_t
+end
+
+
+function ls.destroy_animation(sprites, animation_id)
+  sprites.animations[animation_id].dead = true
 end
 
 
@@ -168,10 +194,6 @@ function ls.draw(sprites, x, y, r, s)
     local sprite_batch = sprites.sprite_batches[i]
     sprite_batch:flush()
     lg.draw(sprite_batch, x, y, r, s, s)
-  end
-
-  for _, quad_data in pairs(sprites.quads_data) do
-    quad_data.current_frame = quad_data.next_current_frame
   end
 end
 

@@ -99,12 +99,12 @@ function spine_draw ()
 	skeleton.state:apply(skeleton.skeleton)
 	skeleton.skeleton:updateWorldTransform()
 
-	skeletonRenderer:draw(skeleton.skeleton)
+	-- skeletonRenderer:draw(skeleton.skeleton)
 
 	skeleton.state2:apply(skeleton.skeleton2)
 	skeleton.skeleton2:updateWorldTransform()
 
-	skeletonRenderer:draw(skeleton.skeleton2)
+	-- skeletonRenderer:draw(skeleton.skeleton2)
 end
 
 function love.mousepressed (x, y, button, istouch)
@@ -172,6 +172,8 @@ local chocolates = {}
 
 local particles
 
+local gracz_animation
+
 function love.load()
   lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
   love.window.setMode(800, 600, {msaa=4})
@@ -185,7 +187,7 @@ function love.load()
   end
 
   ls.prepare(sprites, {
-    "gracz_animation"
+    "gracz_animation", "czekoladka_animation"
   })
 
   -- persistence
@@ -199,9 +201,7 @@ function love.load()
   chocolates[#chocolates + 1] = {x = 510, y = 120, dead = false, visibility = 1}
 
 
-  ls.prepare(chocolate_sprite, {"czekoladka1"})
-  ls.update(chocolate_sprite)
-  ls.add(chocolate_sprite, "czekoladka1", 0, 0)
+  ls.prepare(chocolate_sprite, {"czekoladka_animation"})
 
   -- la.setEffect("my-chorus", {rate = 3, depth = 2, type = "chorus"})
   -- pyszneczekoladka:setEffect("my-chorus")
@@ -218,6 +218,10 @@ function love.load()
 
 
   spine_load()
+
+
+  gracz_animation = ls.create_animation(sprites)
+  ls.play_animation(sprites, gracz_animation, "gracz_animation")
 end
 
 local every_t = 0.04
@@ -230,6 +234,9 @@ function love.update(dt)
 
   flux.update(dt)
   ls.update(sprites, dt)
+
+  ls.update(chocolate_sprite, dt)
+  ls.add(chocolate_sprite, "czekoladka_animation", 0, 0)
 
   spine_update(dt)
   -- spine_animation:update(dt)
@@ -246,6 +253,7 @@ function love.update(dt)
 
   if lk.isDown("a") or lk.isDown("left") then
     player.velocity.x = utils.clamp(-m, player.velocity.x - a, m)
+    ls.play_animation(sprites, gracz_animation, "czekoladka_animation")
   elseif lk.isDown("d") or lk.isDown("right") then
     player.velocity.x = utils.clamp(-m, player.velocity.x + a, m)
   else
@@ -286,7 +294,7 @@ function love.update(dt)
   -- end
 
 
-  ls.add(sprites, "gracz_animation", player.x, player.y)
+  ls.add_animation(sprites, gracz_animation, player.x, player.y)
 
 
   for i=1,#chocolates do
