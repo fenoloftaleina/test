@@ -3,7 +3,7 @@ local ls = {}
 local lg = love.graphics
 local utils = require "utils"
 
-canvas_size = 500
+canvas_size = 1024
 separator = 1
 
 
@@ -122,34 +122,48 @@ function ls.update(sprites, dt)
 
   for i=1,#sprites.animations do
     local animation = sprites.animations[i]
-    if not animation.dead then
+    if not animation.dead and animation.run then
       animation.frame_t = animation.frame_t - dt
       if animation.frame_t < 0 then
         animation.frame_t = animation.frame_t + sprites.frame_t
-        animation.frame = animation.frame % animation.frames + 1
+        animation.frame = animation.frame + 1
+        if animation.frame == animation.frames + 1 then
+          if animation.then_animations then
+            local then_animation = table.remove(animation.then_animations)
+            if next(animation.then_animations) == nil then
+              animation.then_animations = nil
+            end
+            ls.play_animation(sprites, animation.id, then_animation, animation.loop, animation.then_animations)
+          elseif animation.loop then
+            animation.frame = 1
+          else
+            animation.frame = animation.frames
+            animation.run = false
+          end
+        end
       end
     end
   end
 end
 
 
-function add_quad(sprites, name, x, y, quad_id)
+function add_quad(sprites, name, quad_id, x, y, r, sx, sy)
   quad_object = sprites.quads_data[name].quad_objects[quad_id]
 
   sprite_batch = sprites.sprite_batches[quad_object.batch_id]
 
-  sprite_batch:add(quad_object.quad, x, y)
+  sprite_batch:add(quad_object.quad, x, y, r, sx, sy)
 end
 
 
-function ls.add(sprites, name, x, y)
-  add_quad(sprites, name, x, y, 1)
+function ls.add(sprites, name, x, y, r, sx, sy)
+  add_quad(sprites, name, 1, x, y, r, sx, sy)
 end
 
 
-function ls.add_animation(sprites, animation_id, x, y)
+function ls.add_animation(sprites, animation_id, x, y, r, sx, sy)
   local animation = sprites.animations[animation_id]
-  add_quad(sprites, animation.name, x, y, animation.frame)
+  add_quad(sprites, animation.name, animation.frame, x, y, r, sx, sy)
 end
 
 
@@ -164,18 +178,34 @@ function ls.create_animation(sprites)
   end
 
   new_animation_id = new_animation_id or #sprites.animations + 1
-  sprites.animations[new_animation_id] = {}
+  sprites.animations[new_animation_id] = {id = new_animation_id}
 
   return new_animation_id
 end
 
-function ls.play_animation(sprites, animation_id, name)
+
+function ls.play_animation(sprites, animation_id, name, loop, then_animations)
   local animation = sprites.animations[animation_id]
 
   animation.name = name
+  animation.run = true
+  animation.loop = loop
+  if then_animations then
+    animation.then_animations = {}
+    for i=1,#then_animations do -- reverse
+      table.insert(animation.then_animations, then_animations[i])
+    end
+  end
   animation.frame = 1
   animation.frames = sprites.quads_data[name].frames
   animation.frame_t = sprites.frame_t
+end
+
+
+function ls.stop_animation(sprites, animation_id)
+  animation.loop = false
+  animation.then_animation = nil
+  animation.run = false
 end
 
 

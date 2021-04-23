@@ -1,137 +1,3 @@
-
-
-
-
-
-local spine = require "spine-love.spine"
-
-local skeleton
-
-local lsp = {}
-
-function lsp.prepare()
-
-end
-
-function lsp.update()
-
-end
-
-function lsp.add()
-
-end
-
-function lsp.draw()
-
-end
-
-
-
--- load atlas, load skeleton data, and then build objects with skeleton and state on that
-
-function load_skeleton (file, animation, x, y, scale)
-	local loader = function (path) return love.graphics.newImage("data/" .. path) end
-	local atlas = spine.TextureAtlas.new(spine.utils.readFile("data/" .. file .. ".atlas"), loader)
-
-	local json = spine.SkeletonJson.new(spine.AtlasAttachmentLoader.new(atlas))
-	json.scale = scale or 1
-	local skeletonData = json:readSkeletonDataFile("data/" .. file .. ".json")
-	local skeleton = spine.Skeleton.new(skeletonData)
-	skeleton.x = x
-	skeleton.y = y
-	skeleton.scaleY = -1
-	skeleton:setToSetupPose()
-
-	local skeleton2 = spine.Skeleton.new(skeletonData)
-	skeleton2.x = x
-	skeleton2.y = y
-	skeleton2.scaleY = -1
-	skeleton2:setToSetupPose()
-
-	local stateData = spine.AnimationStateData.new(skeletonData)
-	local state = spine.AnimationState.new(stateData)
-	state:setAnimationByName(0, animation, true)
-
-	state:update(0.5)
-	state:apply(skeleton)
-
-	-- local stateData2 = spine.AnimationStateData.new(skeletonData)
-	local state2 = spine.AnimationState.new(stateData)
-	state2:setAnimationByName(0, "jump", true)
-
-	state2:update(0.5)
-	state2:apply(skeleton2)
-
-	return { state = state, skeleton = skeleton,
-  state2 = state2, skeleton2 = skeleton2
-}
-end
-
-function spine_load()
-	skeletonRenderer = spine.SkeletonRenderer.new(true)
-  skeleton = load_skeleton("eye", "idle", 400, 500)
-end
-
-local jumped = false
-local idle = true
-local t = 0
-local last_jump = 0
-
-function spine_update(dt)
-  t = t + dt
-
-	skeleton.state:update(dt)
-	skeleton.state2:update(dt)
-
-  if jumped then
-    last_jump = t
-    jumped = false
-  elseif (not idle) and t - last_jump > 0.8 then
-    skeleton.state:setAnimationByName(0, "idle", true)
-    idle = true
-  end
-end
-
-function spine_draw ()
-	-- love.graphics.setBackgroundColor(0, 0, 0, 255)
-	-- love.graphics.setColor(255, 255, 255)
-
-	skeleton.state:apply(skeleton.skeleton)
-	skeleton.skeleton:updateWorldTransform()
-
-	-- skeletonRenderer:draw(skeleton.skeleton)
-
-	skeleton.state2:apply(skeleton.skeleton2)
-	skeleton.skeleton2:updateWorldTransform()
-
-	-- skeletonRenderer:draw(skeleton.skeleton2)
-end
-
-function love.mousepressed (x, y, button, istouch)
-  jumped = true
-  idle = false
-  skeleton.state:setAnimationByName(0, "jump", false)
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 local ls = love.sound
 local la = love.audio
 local lg = love.graphics
@@ -140,8 +6,7 @@ local lk = love.keyboard
 local utils = require "utils"
 local ls = require "love_sprites"
 local flux = require "flux"
-
-require 'spine-love/spine'
+local lsp = require "love_spines"
 
 local player = {
   x = 630,
@@ -173,6 +38,11 @@ local chocolates = {}
 local particles
 
 local gracz_animation
+local czekoladka_animation
+
+local spines = {}
+
+local eye_animation
 
 function love.load()
   lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
@@ -201,6 +71,11 @@ function love.load()
   chocolates[#chocolates + 1] = {x = 510, y = 120, dead = false, visibility = 1}
 
 
+  lsp.prepare(spines, {"eye"})
+  eye_animation = lsp.create_animation(spines, "eye")
+  lsp.play_animation(spines, eye_animation, "idle", true)
+
+
   ls.prepare(chocolate_sprite, {"czekoladka_animation"})
 
   -- la.setEffect("my-chorus", {rate = 3, depth = 2, type = "chorus"})
@@ -217,11 +92,11 @@ function love.load()
   particles:setColors(1, 1, 1, 0.1, 1, 1, 1, 0.5)
 
 
-  spine_load()
-
-
   gracz_animation = ls.create_animation(sprites)
-  ls.play_animation(sprites, gracz_animation, "gracz_animation")
+  ls.play_animation(sprites, gracz_animation, "gracz_animation", true)
+
+  czekoladka_animation = ls.create_animation(chocolate_sprite)
+  ls.play_animation(chocolate_sprite, czekoladka_animation, "czekoladka_animation")
 end
 
 local every_t = 0.04
@@ -234,12 +109,12 @@ function love.update(dt)
 
   flux.update(dt)
   ls.update(sprites, dt)
+  lsp.update(spines, dt)
 
   ls.update(chocolate_sprite, dt)
-  ls.add(chocolate_sprite, "czekoladka_animation", 0, 0)
+  ls.add_animation(chocolate_sprite, czekoladka_animation, 0, 0, 0.1)
 
-  spine_update(dt)
-  -- spine_animation:update(dt)
+  lsp.add_animation(spines, eye_animation, player.x + 100, player.y - 100, -0.2, 0.2)
 
   particles:update(dt)
 
@@ -252,8 +127,11 @@ function love.update(dt)
   local m = 500
 
   if lk.isDown("a") or lk.isDown("left") then
+    if player.velocity.x >= 0 then
+      ls.play_animation(sprites, gracz_animation, "czekoladka_animation", true, {"gracz_animation", "czekoladka_animation", "gracz_animation", "czekoladka_animation"})
+      lsp.play_animation(spines, eye_animation, "jump", false)
+    end
     player.velocity.x = utils.clamp(-m, player.velocity.x - a, m)
-    ls.play_animation(sprites, gracz_animation, "czekoladka_animation")
   elseif lk.isDown("d") or lk.isDown("right") then
     player.velocity.x = utils.clamp(-m, player.velocity.x + a, m)
   else
@@ -357,20 +235,20 @@ function love.draw()
   -- lg.arc("line", "open", 500, 150, 50, math.rad(0), math.rad(-90))
   -- lg.line(550, 150, 550, 450)
 
-  local segments = {
-    -- 550, 50, 600, 100
-  }
-  local ox, oy, r  = 525, 75, 50
-  local x, y = ox, oy
-  segments[1] = x
-  segments[2] = y
-  for i=1,10 do
-    x = x + 10 / i
-    y = y + 10
-    segments[i * 2 + 1] = x
-    segments[i * 2 + 2] = y
-  end
-  lg.line(segments)
+  -- local segments = {
+  --   -- 550, 50, 600, 100
+  -- }
+  -- local ox, oy, r  = 525, 75, 50
+  -- local x, y = ox, oy
+  -- segments[1] = x
+  -- segments[2] = y
+  -- for i=1,10 do
+  --   x = x + 10 / i
+  --   y = y + 10
+  --   segments[i * 2 + 1] = x
+  --   segments[i * 2 + 2] = y
+  -- end
+  -- lg.line(segments)
 
 
   -- local n = 20
@@ -395,8 +273,9 @@ function love.draw()
 
 
   lg.setColor(1, 1, 1, 1)
-  spine_draw()
-  -- spine_animation:draw(400, 400)
+
+
+  lsp.draw(spines)
 
 
   -- lg.pop()
