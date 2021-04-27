@@ -152,7 +152,7 @@ function add_quad(sprites, name, quad_id, x, y, r, sx, sy)
 
   sprite_batch = sprites.sprite_batches[quad_object.batch_id]
 
-  sprite_batch:add(quad_object.quad, x, y, r, sx, sy)
+  sprite_batch:add(quad_object.quad, x, y, r, sx, -(sy or 1))
 end
 
 
@@ -203,6 +203,8 @@ end
 
 
 function ls.stop_animation(sprites, animation_id)
+  local animation = sprites.animations[animation_id]
+
   animation.loop = false
   animation.then_animation = nil
   animation.run = false

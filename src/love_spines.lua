@@ -10,11 +10,11 @@ local skeleton_renderer = spine.SkeletonRenderer.new(true)
 
 
 function load_skeleton_data(file)
-	local loader = function (path) return love.graphics.newImage("data/" .. path) end
-	local atlas = spine.TextureAtlas.new(spine.utils.readFile("data/" .. file .. ".atlas"), loader)
+	local loader = function (path) return love.graphics.newImage("spines/" .. path) end
+	local atlas = spine.TextureAtlas.new(spine.utils.readFile("spines/" .. file .. ".atlas"), loader)
 	local json = spine.SkeletonJson.new(spine.AtlasAttachmentLoader.new(atlas))
 	json.scale = scale or 1
-	local skeleton_data = json:readSkeletonDataFile("data/" .. file .. ".json")
+	local skeleton_data = json:readSkeletonDataFile("spines/" .. file .. ".json")
 
   return skeleton_data
 end
@@ -47,7 +47,7 @@ function lsp.add_animation(spines, animation_id, x, y, sx, sy)
   animation.skeleton.x = x or 0
   animation.skeleton.y = y or 0
   animation.skeleton.scaleX = sx or 1
-  animation.skeleton.scaleY = -(sy or 1)
+  animation.skeleton.scaleY = sy or 1
 end
 
 
