@@ -9,11 +9,13 @@ local utils = require "utils"
 local ls = require "love_sprites"
 local flux = require "flux"
 local lsp = require "love_spines"
-local collisions = require "collisions"
 
 local world = require "world"
 local player = require "player"
 local map = require "map"
+
+
+local canvas
 
 
 local sprites = {}
@@ -26,10 +28,13 @@ function love.load()
   lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
   love.window.setMode(1400, 900, {msaa=4})
   love.window.setVSync(1)
+  -- love.window.setFullscreen(true)
   lg.setLineStyle("smooth")
 
   world.w = lg.getWidth()
   world.h = lg.getHeight()
+
+  canvas = lg.newCanvas(world.w, world.h, {msaa=4})
 
   ls.prepare(world.sprites, {"gracz_animation"})
 
@@ -42,10 +47,22 @@ function love.load()
 end
 
 
-local show_circle = false
+local show_circle = true
+
+-- local updates = 0
+-- local semi_fixed_updates = 0
 
 
-function love.update(dt)
+local dt1_120 = 1 / 120
+local dt1_60 = 1 / 60
+local dt1_30 = 1 / 30
+local dt_e = 0.002
+local ticks_accumulator = 0
+
+
+function semi_fixed_update(dt)
+  -- semi_fixed_updates = semi_fixed_updates + 1
+
   world.t = world.t + dt
 
   flux.update(dt)
@@ -54,31 +71,77 @@ function love.update(dt)
   lsp.update(spines, dt)
 
   if lk.isDown("escape") then
+    -- print("updates " .. updates)
+    -- print("semi_fixed_updates" .. semi_fixed_updates)
     love.event.quit(0)
   end
 
   player.update(dt)
   map.update(dt)
 
+
   lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
 end
 
 
+local frame = false
+local ticks
+local max_ticks = 5
+
+
+function love.update(delta_frame_time)
+  -- updates = updates + 1
+
+  if math.abs(delta_frame_time - dt1_60) < dt_e then
+    ticks = 1
+  elseif math.abs(delta_frame_time - dt1_120) < dt_e then
+    ticks = 0.5
+  elseif math.abs(delta_frame_time - dt1_30) < dt_e then
+    ticks = 2
+  else
+    ticks = 0.0166 / delta_frame_time
+  end
+
+  frame = false
+
+  ticks_accumulator = math.min(ticks_accumulator + ticks, max_ticks);
+  while ticks_accumulator >= 1 do
+    semi_fixed_update(dt1_60)
+    ticks_accumulator = ticks_accumulator - 1;
+    frame = true
+  end
+end
+
+
 function love.draw()
+  if frame then
+    canvas:renderTo(function()
+      lg.clear()
+      lg.setBlendMode("alpha")
+
+      if show_circle then
+        lg.setColor(1, 1, 1)
+        lg.circle("line", player.x, player.y, player.r)
+      end
+
+      if lk.isDown("c") then
+        show_circle = not show_circle
+      end
+
+      map.draw()
+
+      ls.draw(world.sprites)
+      lsp.draw(spines)
+
+      lg.setCanvas()
+    end)
+  end
+
   lg.translate(0, world.h)
   lg.scale(1, -1)
 
-  if show_circle then
-    lg.setColor(1, 1, 1)
-    lg.circle("line", player.x, player.y, player.r)
-  end
+  lg.setBlendMode("alpha", "premultiplied")
 
-  if lk.isDown("c") then
-    show_circle = not show_circle
-  end
-
-  map.draw()
-
-  ls.draw(world.sprites)
-  lsp.draw(spines)
+  lg.setColor(1, 1, 1, 1)
+  lg.draw(canvas)
 end

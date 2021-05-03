@@ -1,4 +1,6 @@
-local map = {}
+local map = {
+  platforms = {}
+}
 
 local ls = love.sound
 local la = love.audio
@@ -9,24 +11,20 @@ local lm = love.mouse
 local utils = require "utils"
 
 local world = require "world"
-local player = require "player"
 
 local clicked = false
 local click_platform = {}
 local selected
 
 
-local platforms = {}
-
-
 function map.load()
-  platforms = table.load("platforms")
+  map.platforms = table.load("platforms")
 end
 
 
 function handle_editing(dt)
   if lk.isDown("p") then
-    table.save(platforms, "platforms")
+    table.save(map.platforms, "platforms")
   end
 
   if lm.isDown(1) then
@@ -48,8 +46,8 @@ function handle_editing(dt)
 
       local selected_i
 
-      for i=1,#platforms do
-        local platform = platforms[i]
+      for i=1,#map.platforms do
+        local platform = map.platforms[i]
 
         if mx >= platform.x1 and
           mx <= platform.x2 and
@@ -61,7 +59,7 @@ function handle_editing(dt)
       end
 
       if selected and lk.isDown("d") then
-        table.remove(platforms, selected_i)
+        table.remove(map.platforms, selected_i)
       end
 
       click_platform = {}
@@ -72,7 +70,7 @@ function handle_editing(dt)
         click_platform.x2 = mx
         click_platform.y2 = my
 
-        table.insert(platforms, click_platform)
+        table.insert(map.platforms, click_platform)
       end
     else
       click_platform.x2 = mx
@@ -104,24 +102,13 @@ end
 
 
 function map.update(dt)
-  for i=1,#platforms do
-    local platform = platforms[i]
-
-    local collided, dx, dy = collisions.circle_rect(
-      player.x, player.y, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
-
-      if collided then
-        player.collided(dx, dy)
-      end
-  end
-
   handle_editing(dt)
 end
 
 
 function map.draw()
-  for i=1,#platforms do
-    local platform = platforms[i]
+  for i=1,#map.platforms do
+    local platform = map.platforms[i]
 
     lg.rectangle("line", platform.x1, platform.y1, platform.x2 - platform.x1, platform.y2 - platform.y1)
   end

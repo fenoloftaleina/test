@@ -12,10 +12,9 @@ function collisions.circle_rect(cx, cy, cr, x1, y1, x2, y2)
     local d = math.sqrt(d_squared)
     local nx, ny = dx / d, dy / d
     local restitution = cr - d
-    -- return true, cr - d * nx, cr - d * ny
-    return true, restitution * nx, restitution * ny
+    return true, d, restitution * nx, restitution * ny
   else
-    return false, 0, 0
+    return false, nil, 0, 0
   end
 end
 
