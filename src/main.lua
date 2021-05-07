@@ -6,9 +6,10 @@ local lm = love.mouse
 
 
 local utils = require "utils"
-local ls = require "love_sprites"
-local flux = require "flux"
-local lsp = require "love_spines"
+local ls = require "core/love_sprites"
+local lsp = require "core/love_spines"
+
+local flux = require "libs/flux"
 
 local world = require "world"
 local player = require "player"

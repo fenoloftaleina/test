@@ -2,7 +2,7 @@ local lk = love.keyboard
 local lm = love.mouse
 
 local utils = require "utils"
-local ls = require "love_sprites"
+local ls = require "core/love_sprites"
 local world = require "world"
 local map = require "map"
 local collisions = require "collisions"
