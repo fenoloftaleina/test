@@ -122,7 +122,6 @@ function ls.update(sprites, dt)
 
   for i=1,#sprites.animations do
     local animation = sprites.animations[i]
-    utils.tprint(animation)
     if not animation.dead and animation.run then
       animation.frame_t = animation.frame_t - dt
       if animation.frame_t < 0 then
