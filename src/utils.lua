@@ -56,10 +56,21 @@ function utils.distance_squared(x1, y1, x2, y2)
 end
 
 
-function rotate(x, y, a)
+function utils.rotate(x, y, a)
   local c = math.cos(a)
   local s = math.sin(a)
   return c*x - s*y, s*x + c*y
+end
+
+
+function utils.sgn(x)
+  if x < 0 then
+    return -1
+  elseif x > 0 then
+    return 1
+  else
+    return 0
+  end
 end
 
 

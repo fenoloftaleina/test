@@ -51,30 +51,34 @@ end
 
 
 function check_collisions(already_checked)
-  local chosen_dx, chosen_dy = 0, 0
-  local min_d = 99999
+  local chosen_sx, chosen_sy = 0, 0
+  -- local min_d = 99999
+  local max_s = 0
 
   for i=1,#map.platforms do
     local platform = map.platforms[i]
 
-    local collision, d, dx, dy
-    collision, d, dx, dy = collisions.circle_rect(
-      player.x, player.y, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
+    -- local collision, d, sx, sy = collisions.circle_rect(
+    --   player.x, player.y, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
+    local collision, s, sx, sy = collisions.rect_rect(
+      player.x, player.y, player.r, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
 
     if collision then
       player.collision = true
 
-      if d < min_d then
-        chosen_dx = dx
-        chosen_dy = dy
+      -- if d < min_d then
+      --   min_d = d
+      if s > max_s then
+        max_s = s
 
-        min_d = d
+        chosen_sx = sx
+        chosen_sy = sy
       end
     end
   end
 
   if player.collision then
-    player.collided(chosen_dx, chosen_dy)
+    player.collided(chosen_sx, chosen_sy)
 
     if not already_checked then
       check_collisions(true)
@@ -118,21 +122,19 @@ function player.update(dt)
   player.x = player.x + player.velocity.x * dt
   player.y = player.y + player.velocity.y * dt
 
-
   check_collisions()
-
 
   -- ls.add(world.sprites, "gracz_animation", player.x - 50, player.y + 50)
 end
 
 
-function player.collided(dx, dy)
-  player.x = player.x - dx
-  player.y = player.y - (dy * 1.0002)
+function player.collided(sx, sy)
+  player.x = player.x + sx
+  player.y = player.y + (sy * 1.0002)
 
-  if dy < 0 then
+  if sy > 0 then
     grounded = true
-  elseif dy > 0 then
+  elseif sy < 0 then
     stop_jump()
   end
 end

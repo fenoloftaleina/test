@@ -122,7 +122,8 @@ function love.draw()
 
       if show_circle then
         lg.setColor(1, 1, 1)
-        lg.circle("line", player.x, player.y, player.r)
+        -- lg.circle("line", player.x, player.y, player.r)
+        lg.rectangle("line", player.x - player.r, player.y - player.r, player.r * 2, player.r * 2)
       end
 
       if lk.isDown("c") then
