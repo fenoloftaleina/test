@@ -15,8 +15,11 @@ local world = require "world"
 local player = require "player"
 local map = require "map"
 
+local shaders = require "shaders"
+
 
 local canvas
+local shader
 
 
 local sprites = {}
@@ -45,6 +48,8 @@ function love.load()
 
   player.load()
   map.load()
+
+  shader = shaders.example
 end
 
 
@@ -145,5 +150,8 @@ function love.draw()
   lg.setBlendMode("alpha", "premultiplied")
 
   lg.setColor(1, 1, 1, 1)
+
+  lg.setShader(shader)
   lg.draw(canvas)
+  lg.setShader()
 end
