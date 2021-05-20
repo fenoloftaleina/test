@@ -122,6 +122,7 @@ function player.update(dt)
   player.x = player.x + player.velocity.x * dt
   player.y = player.y + player.velocity.y * dt
 
+  grounded = false
   check_collisions()
 
   -- ls.add(world.sprites, "gracz_animation", player.x - 50, player.y + 50)
