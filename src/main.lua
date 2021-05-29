@@ -27,6 +27,9 @@ local spines = {}
 
 local eye_animation
 
+local bg_animation
+local bg_sprites = {}
+
 
 function love.load()
   lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
@@ -40,11 +43,15 @@ function love.load()
 
   canvas = lg.newCanvas(world.w, world.h, {msaa=4})
 
-  ls.prepare(world.sprites, {"gracz_animation"})
+  ls.prepare(world.sprites, {"gracz_animation", "bg_animation"})
+  ls.prepare(bg_sprites, {"bg_animation"}, 0.5)
 
   lsp.prepare(spines, {"eye"})
   eye_animation = lsp.create_animation(spines, "eye")
   lsp.play_animation(spines, eye_animation, "idle", true)
+
+  bg_animation = ls.create_animation(bg_sprites)
+  ls.play_animation(bg_sprites, bg_animation, "bg_animation", true)
 
   player.load()
   map.load()
@@ -53,7 +60,7 @@ function love.load()
 end
 
 
-local show_circle = true
+local show_circle = false
 
 -- local updates = 0
 -- local semi_fixed_updates = 0
@@ -74,6 +81,7 @@ function semi_fixed_update(dt)
   flux.update(dt)
 
   ls.update(world.sprites, dt)
+  ls.update(bg_sprites, dt)
   lsp.update(spines, dt)
 
   if lk.isDown("escape") then
@@ -87,6 +95,8 @@ function semi_fixed_update(dt)
 
 
   lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
+
+  -- ls.add_animation(bg_sprites, bg_animation, 0, 0, 0, 7, -5)
 end
 
 
@@ -127,8 +137,8 @@ function love.draw()
 
       if show_circle then
         lg.setColor(1, 1, 1)
-        -- lg.circle("line", player.x, player.y, player.r)
-        lg.rectangle("line", player.x - player.r, player.y - player.r, player.r * 2, player.r * 2)
+        lg.circle("line", player.x, player.y, player.r)
+        -- lg.rectangle("line", player.x - player.r, player.y - player.r, player.r * 2, player.r * 2)
       end
 
       if lk.isDown("c") then
@@ -136,6 +146,10 @@ function love.draw()
       end
 
       map.draw()
+
+      lg.setColor(1, 1, 1, 0.5)
+      ls.draw(bg_sprites)
+      lg.setColor(1, 1, 1)
 
       ls.draw(world.sprites)
       lsp.draw(spines)
@@ -151,7 +165,8 @@ function love.draw()
 
   lg.setColor(1, 1, 1, 1)
 
-  lg.setShader(shader)
+  -- lg.setShader(shader)
+  shader.send(shader, "mouse", {lm.getX(), lm.getY()})
   lg.draw(canvas)
-  lg.setShader()
+  -- lg.setShader()
 end

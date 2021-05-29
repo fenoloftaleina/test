@@ -74,6 +74,18 @@ function new_image(name)
 end
 
 
+function fill_zeroes_name(frame)
+  local s = tostring(frame)
+  local len = #s
+
+  for i=1,4-len do
+    s = "0" .. s
+  end
+
+  return s
+end
+
+
 function ls.prepare(sprites, names, frame_t)
   sprites.quads_data = {}
   sprites.sprite_batches = {}
@@ -88,15 +100,15 @@ function ls.prepare(sprites, names, frame_t)
     local images = {}
 
     if name:sub(-9) == "animation" then -- animation
-      frame = 1
-      image = new_image(name .. frame)
+      frame = 0
+      image = new_image(name .. fill_zeroes_name(frame))
 
       while true do
         if image then
           table.insert(images, image)
 
           frame = frame + 1
-          image = new_image(name .. frame)
+          image = new_image(name .. fill_zeroes_name(frame))
         else
           break
         end

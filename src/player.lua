@@ -10,7 +10,7 @@ local collisions = require "collisions"
 local player = {
   x = 150,
   y = 350,
-  r = 35,
+  r = 45,
   velocity = {
     x = 0,
     y = 0
@@ -52,24 +52,24 @@ end
 
 function check_collisions(already_checked)
   local chosen_sx, chosen_sy = 0, 0
-  -- local min_d = 99999
-  local max_s = 0
+  local min_d = 99999
+  -- local max_s = 0
 
   for i=1,#map.platforms do
     local platform = map.platforms[i]
 
-    -- local collision, d, sx, sy = collisions.circle_rect(
-    --   player.x, player.y, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
-    local collision, s, sx, sy = collisions.rect_rect(
-      player.x, player.y, player.r, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
+    local collision, d, sx, sy = collisions.circle_rect(
+      player.x, player.y, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
+    -- local collision, s, sx, sy = collisions.rect_rect(
+    --   player.x, player.y, player.r, player.r, platform.x1, platform.y1, platform.x2, platform.y2)
 
     if collision then
       player.collision = true
 
-      -- if d < min_d then
-      --   min_d = d
-      if s > max_s then
-        max_s = s
+      if d < min_d then
+        min_d = d
+      -- if s > max_s then
+      --   max_s = s
 
         chosen_sx = sx
         chosen_sy = sy
@@ -125,7 +125,7 @@ function player.update(dt)
   grounded = false
   check_collisions()
 
-  -- ls.add(world.sprites, "gracz_animation", player.x - 50, player.y + 50)
+  ls.add_animation(world.sprites, player.animation, player.x - player.r, player.y + player.r)
 end
 
 
