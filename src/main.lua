@@ -18,6 +18,9 @@ local map = require "map"
 local shaders = require "shaders"
 
 
+local bg = require "bg"
+
+
 local canvas
 local shader
 
@@ -27,12 +30,13 @@ local spines = {}
 
 local eye_animation
 
-local bg_animation
 local bg_sprites = {}
+
+local bg_particles
 
 
 function love.load()
-  lg.setBackgroundColor(0.7, 0.7, 0.7, 1)
+  lg.setBackgroundColor(0.9, 0.9, 0.9, 1)
   love.window.setMode(1400, 900, {msaa=4})
   love.window.setVSync(1)
   -- love.window.setFullscreen(true)
@@ -43,20 +47,31 @@ function love.load()
 
   canvas = lg.newCanvas(world.w, world.h, {msaa=4})
 
-  ls.prepare(world.sprites, {"gracz_animation", "bg_animation"})
-  ls.prepare(bg_sprites, {"bg_animation"}, 0.5)
+  ls.prepare(world.sprites, {"gracz_animation"})
+  ls.prepare(bg_sprites, {"bg_a_animation"})
 
   lsp.prepare(spines, {"eye"})
   eye_animation = lsp.create_animation(spines, "eye")
   lsp.play_animation(spines, eye_animation, "idle", true)
 
-  bg_animation = ls.create_animation(bg_sprites)
-  ls.play_animation(bg_sprites, bg_animation, "bg_animation", true)
+
+  bg.prepare()
+
 
   player.load()
   map.load()
 
   shader = shaders.example
+
+  -- bg_particles = lg.newParticleSystem(bg_sprites.sprite_batches[1]:getTexture(), 10)
+  bg_particles = lg.newParticleSystem(lg.newImage("resources/images/bg_a_animation0000.png"), 10)
+  bg_particles:setParticleLifetime(1)
+  bg_particles:setEmissionRate(2)
+  -- local quads = bg_sprites.quads_data["bg_a_animation"].quad_objects
+  -- bg_particles:setQuads(quads[1], quads[2], quads[3], quads[4], quads[5])
+
+  bg_particles:setLinearAcceleration(-100, -100, 100, 100)
+  bg_particles:setSpeed(50)
 end
 
 
@@ -84,6 +99,10 @@ function semi_fixed_update(dt)
   ls.update(bg_sprites, dt)
   lsp.update(spines, dt)
 
+
+  bg.update(dt)
+
+
   if lk.isDown("escape") then
     -- print("updates " .. updates)
     -- print("semi_fixed_updates" .. semi_fixed_updates)
@@ -96,7 +115,8 @@ function semi_fixed_update(dt)
 
   lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
 
-  -- ls.add_animation(bg_sprites, bg_animation, 0, 0, 0, 7, -5)
+
+  bg_particles:update(dt)
 end
 
 
@@ -135,6 +155,10 @@ function love.draw()
       lg.clear()
       lg.setBlendMode("alpha")
 
+
+      bg.draw()
+
+
       if show_circle then
         lg.setColor(1, 1, 1)
         lg.circle("line", player.x, player.y, player.r)
@@ -148,11 +172,15 @@ function love.draw()
       map.draw()
 
       lg.setColor(1, 1, 1, 0.5)
-      ls.draw(bg_sprites)
+      -- ls.draw(bg_sprites)
       lg.setColor(1, 1, 1)
 
       ls.draw(world.sprites)
       lsp.draw(spines)
+
+
+      -- lg.draw(bg_particles, 300, 300)
+
 
       lg.setCanvas()
     end)

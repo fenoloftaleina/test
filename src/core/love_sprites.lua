@@ -228,16 +228,17 @@ function ls.destroy_animation(sprites, animation_id)
 end
 
 
-function ls.draw(sprites, x, y, r, s)
+function ls.draw(sprites, x, y, r, sx, sy)
   x = x or 0
   y = y or 0
   r = r or 0
-  s = s or 1
+  sx = sx or 1
+  sy = sy or 1
 
   for i=1,#sprites.sprite_batches do
     local sprite_batch = sprites.sprite_batches[i]
     sprite_batch:flush()
-    lg.draw(sprite_batch, x, y, r, s, s)
+    lg.draw(sprite_batch, x, y, r, sx, sy)
   end
 end
 
