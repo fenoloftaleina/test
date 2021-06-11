@@ -18,13 +18,13 @@ local selected
 
 
 function map.load()
-  map.platforms = table.load("platforms")
+  map.platforms = {} --table.load("src/platforms")
 end
 
 
 function handle_editing(dt)
   if lk.isDown("p") then
-    table.save(map.platforms, "platforms")
+    table.save(map.platforms, "src/platforms")
   end
 
   if lm.isDown(1) then
