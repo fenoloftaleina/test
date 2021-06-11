@@ -7,7 +7,7 @@ local lm = love.mouse
 
 local utils = require "utils"
 local ls = require "core/love_sprites"
-local lsp = require "core/love_spines"
+-- local lsp = require "core/love_spines"
 
 local flux = require "libs/flux"
 
@@ -50,9 +50,9 @@ function love.load()
   ls.prepare(world.sprites, {"gracz_animation"})
   ls.prepare(bg_sprites, {"bg_a_animation"})
 
-  lsp.prepare(spines, {"eye"})
-  eye_animation = lsp.create_animation(spines, "eye")
-  lsp.play_animation(spines, eye_animation, "idle", true)
+  -- lsp.prepare(spines, {"eye"})
+  -- eye_animation = lsp.create_animation(spines, "eye")
+  -- lsp.play_animation(spines, eye_animation, "idle", true)
 
 
   bg.prepare()
@@ -97,7 +97,7 @@ function semi_fixed_update(dt)
 
   ls.update(world.sprites, dt)
   ls.update(bg_sprites, dt)
-  lsp.update(spines, dt)
+  -- lsp.update(spines, dt)
 
 
   bg.update(dt)
@@ -113,7 +113,7 @@ function semi_fixed_update(dt)
   map.update(dt)
 
 
-  lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
+  -- lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
 
 
   bg_particles:update(dt)
@@ -176,7 +176,7 @@ function love.draw()
       lg.setColor(1, 1, 1)
 
       ls.draw(world.sprites)
-      lsp.draw(spines)
+      -- lsp.draw(spines)
 
 
       -- lg.draw(bg_particles, 300, 300)
@@ -194,7 +194,7 @@ function love.draw()
   lg.setColor(1, 1, 1, 1)
 
   -- lg.setShader(shader)
-  shader.send(shader, "mouse", {lm.getX(), lm.getY()})
+  -- shader.send(shader, "mouse", {lm.getX(), lm.getY()})
   lg.draw(canvas)
   -- lg.setShader()
 end
