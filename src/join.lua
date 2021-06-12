@@ -87,7 +87,7 @@ function join.update(dt)
       clicked_crouch = true
 
       join.guy.crouching = not join.guy.crouching
-      schedule_move({i = 0, j = 0})
+      logic.prepare_visibility(join.dog)
     end
   elseif clicked_crouch then
     clicked_crouch = false

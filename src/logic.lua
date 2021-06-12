@@ -151,7 +151,7 @@ function resolve_bone_case(dog)
   dog.sees_bone = false
 
   -- no bones seen from a bush
-  if map.tiles[i][j] == map.bush then return end
+  -- if map.tiles[i][j] == map.bush then return end
 
   i = dog.pos.i - 1
   if i > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
@@ -275,12 +275,18 @@ function resolve_collisions(guy, dog)
 
 
   if guy.in_bush or (guy.crouching and map.tiles_overlay[guy.next_pos.i][guy.next_pos.j].active) then
-    dog.lost = true
-    dog.next_lost = true
+    if not dog.sees_bone then
+      dog.lost = true
+      dog.next_lost = true
+    end
+
+    dog.wannabe_lost = true
   else
     dog.next_lost = false
-    if dog.lost and guy.crouching then
+    if dog.wannabe_lost and guy.crouching then
       guy.crouching = false
+
+      dog.wannabe_lost = false
     end
   end
 
