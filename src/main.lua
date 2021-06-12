@@ -22,6 +22,8 @@ local shaders = require "shaders"
 
 local join = require "join"
 
+local editor = require "editor"
+
 
 
 local canvas
@@ -61,10 +63,11 @@ function love.load()
   -- bg.prepare()
 
 
+  map.load()
+  editor.prepare()
   join.prepare()
 
 
-  map.load()
 
   shader = shaders.example
 
@@ -108,6 +111,7 @@ function semi_fixed_update(dt)
   -- bg.update(dt)
 
 
+  editor.update(dt)
   join.update(dt)
 
 
@@ -116,8 +120,6 @@ function semi_fixed_update(dt)
     -- print("semi_fixed_updates" .. semi_fixed_updates)
     love.event.quit(0)
   end
-
-  map.update(dt)
 
 
   -- lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
@@ -166,10 +168,8 @@ function love.draw()
       -- bg.draw()
 
 
-      join.draw()
-
-
       map.draw()
+      join.draw()
 
       lg.setColor(1, 1, 1, 0.5)
       -- ls.draw(bg_sprites)
@@ -181,6 +181,7 @@ function love.draw()
 
       -- lg.draw(bg_particles, 300, 300)
 
+      editor.draw()
 
       lg.setCanvas()
     end)
