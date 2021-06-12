@@ -28,6 +28,7 @@ function join.prepare()
   join.dog = {pos = {i = map.tiles.dog_pos.i, j = map.tiles.dog_pos.j, x = 0, y = 0}, next_pos = {}}
 
   logic.prepare(join.guy, join.dog)
+  logic.run(join.guy, join.dog, {i = 0, j = 0})
 end
 
 

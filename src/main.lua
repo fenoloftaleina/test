@@ -129,7 +129,7 @@ function semi_fixed_update(dt)
   end
 
 
-  if lk.isDown("b") then
+  if lk.isDown("v") then
     if not b_clicked then
       b_clicked = true
 
@@ -141,7 +141,7 @@ function semi_fixed_update(dt)
     b_clicked = false
   end
 
-  if lk.isDown("n") then
+  if lk.isDown("b") then
     if not n_clicked then
       n_clicked = true
 

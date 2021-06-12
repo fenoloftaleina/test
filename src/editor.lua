@@ -98,7 +98,7 @@ function editor.update(dt)
     clicked_j = false
   end
 
-  if lk.isDown("k") then
+  if lk.isDown("n") then
     if not clicked_k then
       clicked_k = true
 
