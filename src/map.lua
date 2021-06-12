@@ -105,7 +105,7 @@ function map.draw()
 
 
       if map.tiles_overlay[i][j].opacity > 0 then
-        lg.setColor(map.types_colors[tile][1] - 0.1, map.types_colors[tile][2] - 0.1, map.types_colors[tile][3] - 0.1, map.tiles_overlay[i][j].opacity)
+        lg.setColor(map.types_colors[tile][1] + 0.2, map.types_colors[tile][2], map.types_colors[tile][3] + 0.1, map.tiles_overlay[i][j].opacity)
         local pos = {i = i, j = j}
         map.ij_to_xy(pos)
         lg.rectangle("fill", pos.x + map.offset_x, pos.y + map.offset_y, map.tile_size, map.tile_size)
