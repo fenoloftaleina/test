@@ -39,9 +39,9 @@ function map.load(map_name)
 
   map.name = map_name
 
-  map.tile_size = 100
-  map.offset_x = 75
-  map.offset_y = -75
+  map.tile_size = 120
+  map.offset_x = -50
+  map.offset_y = -115
   map.margin = 5
 
   map.guy = -2
