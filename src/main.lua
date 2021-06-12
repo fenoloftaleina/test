@@ -40,7 +40,7 @@ local bg_sprites = {}
 local bg_particles
 
 
-local maps = {"map1", "map2", "map3"}
+local maps = {"intro1", "intro2", "map1", "map2", "expert1", "expert2", "finale"}
 local map_i = 1
 local b_clicked = false
 local n_clicked = false

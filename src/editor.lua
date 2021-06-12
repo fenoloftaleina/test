@@ -13,6 +13,9 @@ local join = require "join"
 
 local clicked_e = false
 local clicked_j = false
+local clicked_k = false
+local clicked_t = false
+local clicked_y = false
 local step_left = false
 local step_right = false
 local step_up = false
@@ -93,6 +96,45 @@ function editor.update(dt)
     end
   elseif clicked_j then
     clicked_j = false
+  end
+
+  if lk.isDown("k") then
+    if not clicked_k then
+      clicked_k = true
+
+      map.tiles[editor.pos.i][editor.pos.j] = map.grass
+
+      map.prepare()
+      logic.prepare_visibility(join.dog)
+    end
+  elseif clicked_k then
+    clicked_k = false
+  end
+
+  if lk.isDown("t") then
+    if not clicked_t then
+      clicked_t = true
+
+      map.tiles.guy_pos = {i = editor.pos.i, j = editor.pos.j}
+
+      map.prepare()
+      join.prepare()
+    end
+  elseif clicked_t then
+    clicked_t = false
+  end
+
+  if lk.isDown("y") then
+    if not clicked_y then
+      clicked_y = true
+
+      map.tiles.dog_pos = {i = editor.pos.i, j = editor.pos.j}
+
+      map.prepare()
+      join.prepare()
+    end
+  elseif clicked_y then
+    clicked_y = false
   end
 
   map.ij_to_xy(editor.pos)
