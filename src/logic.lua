@@ -96,11 +96,15 @@ function logic.prepare_visibility(dog)
         local found = false
 
         for k=1,#map.hiders do
-          found = segmentVsAABB(x1, y1, x2, y2,
-          map.hiders[k].x, map.hiders[k].y + map.tile_size, map.hiders[k].x + map.tile_size, map.hiders[k].y)
+          if map.hiders[k].i == dog.pos.i and map.hiders[k].j == dog.pos.j then
+            -- skip
+          else
+            found = segmentVsAABB(x1, y1, x2, y2,
+            map.hiders[k].x, map.hiders[k].y + map.tile_size, map.hiders[k].x + map.tile_size, map.hiders[k].y)
 
-          if found then
-            break
+            if found then
+              break
+            end
           end
         end
 
