@@ -12,92 +12,46 @@ local utils = require "utils"
 
 local world = require "world"
 
-local clicked = false
-local click_platform = {}
-local selected
+
+local grass_color = {0.3, 0.7, 0.5}
+local guy_color = {0.1, 0.2, 0.6}
+local dog_color = {0.5, 0.4, 0.1}
+
+local types_colors = {grass_color, guy_color, dog_color}
 
 
 function map.load()
-  map.platforms = {} --table.load("src/platforms")
+  -- map.tiles = table.load("maps")
+
+  map.tiles = {}
+
+  map.tile_size = 50
+  map.offset_x = 375
+  map.offset_y = 200
+  map.margin = 5
+
+  map.grass = 1
+  map.guy = 2
+  map.dog = 3
+
+  for i=1,10 do
+    map.tiles[i] = {}
+
+    for j=1,10 do
+      map.tiles[i][j] = map.grass
+    end
+  end
+
+  map.tiles[5][5] = map.guy
+  map.tiles[8][7] = map.dog
 end
 
 
 function handle_editing(dt)
   if lk.isDown("p") then
-    table.save(map.platforms, "src/platforms")
+    table.save(map.tiles, "maps")
   end
 
-  if lm.isDown(1) then
-    local mx = lm.getX()
-    local my = world.h - lm.getY()
-
-    if selected then
-      local diff_x = mx - click_platform.x1
-      local diff_y = my - click_platform.y1
-      click_platform.x1 = mx
-      click_platform.y1 = my
-
-      selected.x1 = selected.x1 + diff_x
-      selected.y1 = selected.y1 + diff_y
-      selected.x2 = selected.x2 + diff_x
-      selected.y2 = selected.y2 + diff_y
-    elseif not clicked then
-      clicked = true
-
-      local selected_i
-
-      for i=1,#map.platforms do
-        local platform = map.platforms[i]
-
-        if mx >= platform.x1 and
-          mx <= platform.x2 and
-          my >= platform.y1 and
-          my <= platform.y2 then
-          selected = platform
-          selected_i = i
-        end
-      end
-
-      if selected and lk.isDown("d") then
-        table.remove(map.platforms, selected_i)
-      end
-
-      click_platform = {}
-      click_platform.x1 = mx
-      click_platform.y1 = my
-
-      if not selected then
-        click_platform.x2 = mx
-        click_platform.y2 = my
-
-        table.insert(map.platforms, click_platform)
-      end
-    else
-      click_platform.x2 = mx
-      click_platform.y2 = my
-    end
-  elseif clicked then
-    clicked = false
-
-    if not selected then
-      click_platform.x2 = lm.getX()
-      click_platform.y2 = world.h - lm.getY()
-
-      if click_platform.x2 < click_platform.x1 then
-        local temp = click_platform.x1
-        click_platform.x1 = click_platform.x2
-        click_platform.x2 = temp
-      end
-
-      if click_platform.y2 < click_platform.y1 then
-        local temp = click_platform.y1
-        click_platform.y1 = click_platform.y2
-        click_platform.y2 = temp
-      end
-    else
-      selected = nil
-    end
-  end
 end
 
 
@@ -107,11 +61,16 @@ end
 
 
 function map.draw()
-  for i=1,#map.platforms do
-    local platform = map.platforms[i]
+  for i=1,#map.tiles do
+    for j=1,#map.tiles[i] do
+      local tile = map.tiles[i][j]
 
-    lg.rectangle("line", platform.x1, platform.y1, platform.x2 - platform.x1, platform.y2 - platform.y1)
+      lg.setColor(types_colors[tile])
+      lg.rectangle("fill", i * (50 + map.margin) + map.offset_x, j * (50 + map.margin) + map.offset_y, map.tile_size, map.tile_size)
+    end
   end
+
+  lg.setColor(1, 1, 1)
 end
 
 return map

@@ -12,13 +12,16 @@ local ls = require "core/love_sprites"
 local flux = require "libs/flux"
 
 local world = require "world"
-local player = require "player"
 local map = require "map"
 
 local shaders = require "shaders"
 
 
-local bg = require "bg"
+-- local bg = require "bg"
+
+
+local join = require "join"
+
 
 
 local canvas
@@ -55,10 +58,12 @@ function love.load()
   -- lsp.play_animation(spines, eye_animation, "idle", true)
 
 
-  bg.prepare()
+  -- bg.prepare()
 
 
-  player.load()
+  join.prepare()
+
+
   map.load()
 
   shader = shaders.example
@@ -100,7 +105,10 @@ function semi_fixed_update(dt)
   -- lsp.update(spines, dt)
 
 
-  bg.update(dt)
+  -- bg.update(dt)
+
+
+  join.update(dt)
 
 
   if lk.isDown("escape") then
@@ -109,7 +117,6 @@ function semi_fixed_update(dt)
     love.event.quit(0)
   end
 
-  player.update(dt)
   map.update(dt)
 
 
@@ -156,18 +163,11 @@ function love.draw()
       lg.setBlendMode("alpha")
 
 
-      bg.draw()
+      -- bg.draw()
 
 
-      if show_circle then
-        lg.setColor(1, 1, 1)
-        lg.circle("line", player.x, player.y, player.r)
-        -- lg.rectangle("line", player.x - player.r, player.y - player.r, player.r * 2, player.r * 2)
-      end
+      join.draw()
 
-      if lk.isDown("c") then
-        show_circle = not show_circle
-      end
 
       map.draw()
 
