@@ -4,6 +4,8 @@ local join = {}
 local lg = love.graphics
 local lk = love.keyboard
 
+local flux = require "libs/flux"
+
 local utils = require "utils"
 local world = require "world"
 local map = require "map"
@@ -29,6 +31,14 @@ function join.prepare()
 end
 
 
+local movement = {next_moves = {}, moving_t = -0.01, moving = false}
+
+
+function schedule_move(move)
+  movement.next_moves[#movement.next_moves + 1] = move
+end
+
+
 function join.update(dt)
   if map.editor_active then return end
 
@@ -36,7 +46,7 @@ function join.update(dt)
     if not step_left then
       step_left = true
 
-      logic.run(join.guy, join.dog, {i = -1, j = 0})
+      schedule_move({i = -1, j = 0})
     end
   elseif step_left then
     step_left = false
@@ -46,7 +56,7 @@ function join.update(dt)
     if not step_right then
       step_right = true
 
-      logic.run(join.guy, join.dog, {i = 1, j = 0})
+      schedule_move({i = 1, j = 0})
     end
   elseif step_right then
     step_right = false
@@ -56,7 +66,7 @@ function join.update(dt)
     if not step_down then
       step_down = true
 
-      logic.run(join.guy, join.dog, {i = 0, j = -1})
+      schedule_move({i = 0, j = -1})
     end
   elseif step_down then
     step_down = false
@@ -66,7 +76,7 @@ function join.update(dt)
     if not step_up then
       step_up = true
 
-      logic.run(join.guy, join.dog, {i = 0, j = 1})
+      schedule_move({i = 0, j = 1})
     end
   elseif step_up then
     step_up = false
@@ -77,10 +87,21 @@ function join.update(dt)
       clicked_crouch = true
 
       join.guy.crouching = not join.guy.crouching
-      logic.run(join.guy, join.dog, {i = 0, j = 0})
+      schedule_move({i = 0, j = 0})
     end
   elseif clicked_crouch then
     clicked_crouch = false
+  end
+
+  if movement.moving_t < 0 then
+    movement.moving = false
+  end
+
+  if #movement.next_moves > 0 and not movement.moving then
+    logic.run(join.guy, join.dog, table.remove(movement.next_moves, 1))
+    movement.moving = true
+    movement.moving_t = 1
+    flux.to(movement, 0.3, {moving_t = -0.01})
   end
 end
 
