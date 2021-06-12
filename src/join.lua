@@ -14,6 +14,7 @@ local step_left = false
 local step_right = false
 local step_up = false
 local step_down = false
+local clicked_crouch = false
 
 
 local guy_color = {0.0, 0.0, 0.0}
@@ -70,6 +71,17 @@ function join.update(dt)
   elseif step_up then
     step_up = false
   end
+
+  if lk.isDown("c") or lk.isDown("lctrl") then
+    if not clicked_crouch then
+      clicked_crouch = true
+
+      join.guy.crouching = not join.guy.crouching
+      logic.run(join.guy, join.dog, {i = 0, j = 0})
+    end
+  elseif clicked_crouch then
+    clicked_crouch = false
+  end
 end
 
 
@@ -77,7 +89,11 @@ function join.draw()
   lg.setLineWidth(10)
 
   lg.setColor(guy_color)
-  lg.rectangle("fill", join.guy.pos.x + map.offset_x, join.guy.pos.y + map.offset_y, map.tile_size, map.tile_size)
+  if not join.guy.crouching then
+    lg.rectangle("fill", join.guy.pos.x + map.offset_x, join.guy.pos.y + map.offset_y, map.tile_size, map.tile_size)
+  else
+    lg.rectangle("fill", join.guy.pos.x + map.offset_x, join.guy.pos.y + map.offset_y, map.tile_size, map.tile_size * 0.7)
+  end
   if join.guy.in_bush then
     lg.setColor(map.bush_color)
     lg.rectangle("line", join.guy.pos.x + map.offset_x + 5, join.guy.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)

@@ -130,7 +130,7 @@ function logic.prepare(guy, dog)
   guy.in_bush = false
   dog.in_bush = false
 
-  guy.crouching = true
+  guy.crouching = false
   dog.lost = false
   dog.next_lost = false
 
@@ -187,6 +187,9 @@ function resolve_collisions(guy, dog)
     dog.next_lost = true
   else
     dog.next_lost = false
+    if dog.lost and guy.crouching then
+      guy.crouching = false
+    end
   end
 
   return false
@@ -215,9 +218,9 @@ function logic.run(guy, dog, move)
     flux.to(dog.pos, 0.3, {x = dog.pos.i * (map.tile_size + map.margin), y = dog.pos.j * (map.tile_size + map.margin)})
   elseif not dog.next_lost then
     dog.lost = false
-
-    prepare_visibility(dog)
   end
+
+  prepare_visibility(dog)
 end
 
 
