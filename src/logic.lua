@@ -68,7 +68,7 @@ function segmentVsAABB(x1, y1, x2, y2, l, t, r, b)
 end
 
 
-function prepare_visibility(dog)
+function logic.prepare_visibility(dog)
   local pos = {i = dog.pos.i, j = dog.pos.j}
   map.ij_to_xy(pos)
   local x1 = pos.x + (map.margin + map.tile_size) * 0.5
@@ -135,7 +135,7 @@ function logic.prepare(guy, dog)
   dog.lost = false
   dog.next_lost = false
 
-  prepare_visibility(dog)
+  logic.prepare_visibility(dog)
 end
 
 
@@ -170,6 +170,7 @@ function resolve_collisions(guy, dog)
   -- bush
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.bush then
     guy.in_bush = true
+    guy.crouching = true
   else
     guy.in_bush = false
   end
@@ -221,7 +222,7 @@ function logic.run(guy, dog, move)
     dog.lost = false
   end
 
-  prepare_visibility(dog)
+  logic.prepare_visibility(dog)
 
 
   if ((dog.pos.i == guy.pos.i and (dog.pos.j + 1 == guy.pos.j or dog.pos.j - 1 == guy.pos.j)) or

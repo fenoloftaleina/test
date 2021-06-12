@@ -40,6 +40,12 @@ local bg_sprites = {}
 local bg_particles
 
 
+local maps = {"map1", "map2", "map3"}
+local map_i = 1
+local b_clicked = false
+local n_clicked = false
+
+
 function love.load()
   lg.setBackgroundColor(0.9, 0.9, 0.9, 1)
   love.window.setMode(1400, 900, {msaa=4})
@@ -63,7 +69,7 @@ function love.load()
   -- bg.prepare()
 
 
-  map.load()
+  map.load(maps[map_i])
   editor.prepare()
   join.prepare()
 
@@ -119,6 +125,31 @@ function semi_fixed_update(dt)
     -- print("updates " .. updates)
     -- print("semi_fixed_updates" .. semi_fixed_updates)
     love.event.quit(0)
+  end
+
+
+  if lk.isDown("b") then
+    if not b_clicked then
+      b_clicked = true
+
+      map_i = map_i - 1
+      map.load(maps[map_i])
+      join.prepare()
+    end
+  elseif b_clicked then
+    b_clicked = false
+  end
+
+  if lk.isDown("n") then
+    if not n_clicked then
+      n_clicked = true
+
+      map_i = map_i + 1
+      map.load(maps[map_i])
+      join.prepare()
+    end
+  elseif n_clicked then
+    n_clicked = false
   end
 
 

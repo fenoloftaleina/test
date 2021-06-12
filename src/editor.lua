@@ -9,6 +9,7 @@ local utils = require "utils"
 local world = require "world"
 local map = require "map"
 local logic = require "logic"
+local join = require "join"
 
 local clicked_e = false
 local clicked_j = false
@@ -36,7 +37,7 @@ function editor.update(dt)
   if not map.editor_active then return end
 
   if lk.isDown("p") then
-    table.save(map.tiles, "maps")
+    table.save(map.tiles, map.name)
   end
 
 
@@ -88,6 +89,7 @@ function editor.update(dt)
         (map.tiles[editor.pos.i][editor.pos.j] % map.colors_n) + 1
 
       map.prepare()
+      logic.prepare_visibility(join.dog)
     end
   elseif clicked_j then
     clicked_j = false

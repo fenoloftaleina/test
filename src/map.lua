@@ -34,8 +34,10 @@ function map.prepare()
 end
 
 
-function map.load()
-  map.tiles = table.load("maps")
+function map.load(map_name)
+  map.tiles = table.load(map_name)
+
+  map.name = map_name
 
   map.tile_size = 100
   map.offset_x = 75
@@ -49,15 +51,19 @@ function map.load()
   map.bush = 2
   map.water = 3
   map.wall = 4
+  map.bone = 4
+  map.cat = 4
 
-  map.colors_n = 4
+  map.colors_n = 6
 
   map.grass_color = {0.8, 0.8, 0.8}
   map.bush_color = {0.7, 0.8, 0.5}
   map.water_color = {0.6, 0.8, 1.0}
-  map.wall_color = {0.6, 0.6, 0.6}
+  map.wall_color = {0.5, 0.5, 0.5}
+  map.bone_color = {1, 1, 1}
+  map.cat_color = {0.6, 0.6, 0.5}
 
-  map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color}
+  map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color, map.bone_color, map.cat_color}
 
   map.prepare()
 
@@ -99,7 +105,7 @@ function map.draw()
 
 
       if map.tiles_overlay[i][j].opacity > 0 then
-        lg.setColor(map.types_colors[tile][1] - 0.2, map.types_colors[tile][2] - 0.2, map.types_colors[tile][3] - 0.2, map.tiles_overlay[i][j].opacity)
+        lg.setColor(map.types_colors[tile][1] - 0.1, map.types_colors[tile][2] - 0.1, map.types_colors[tile][3] - 0.1, map.tiles_overlay[i][j].opacity)
         local pos = {i = i, j = j}
         map.ij_to_xy(pos)
         lg.rectangle("fill", pos.x + map.offset_x, pos.y + map.offset_y, map.tile_size, map.tile_size)
