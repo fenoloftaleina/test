@@ -16,13 +16,13 @@ local step_up = false
 local step_down = false
 
 
-local guy_color = {0.1, 0.2, 0.6}
-local dog_color = {0.5, 0.4, 0.1}
+local guy_color = {0.0, 0.0, 0.0}
+local dog_color = {1.0, 0.8, 1.0}
 
 
 function join.prepare()
-  join.guy = {pos = {i = map.tiles.guy_pos.i, j = map.tiles.guy_pos.j, x = 0, y = 0}}
-  join.dog = {pos = {i = map.tiles.dog_pos.i, j = map.tiles.dog_pos.j, x = 0, y = 0}}
+  join.guy = {pos = {i = map.tiles.guy_pos.i, j = map.tiles.guy_pos.j, x = 0, y = 0}, next_pos = {}}
+  join.dog = {pos = {i = map.tiles.dog_pos.i, j = map.tiles.dog_pos.j, x = 0, y = 0}, next_pos = {}}
 
   logic.prepare(join.guy, join.dog)
 end
@@ -74,11 +74,21 @@ end
 
 
 function join.draw()
+  lg.setLineWidth(10)
+
   lg.setColor(guy_color)
   lg.rectangle("fill", join.guy.pos.x + map.offset_x, join.guy.pos.y + map.offset_y, map.tile_size, map.tile_size)
+  if join.guy.in_bush then
+    lg.setColor(map.bush_color)
+    lg.rectangle("line", join.guy.pos.x + map.offset_x + 5, join.guy.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)
+  end
 
   lg.setColor(dog_color)
   lg.rectangle("fill", join.dog.pos.x + map.offset_x, join.dog.pos.y + map.offset_y, map.tile_size, map.tile_size)
+  if join.dog.in_bush then
+    lg.setColor(map.bush_color)
+    lg.rectangle("line", join.dog.pos.x + map.offset_x + 5, join.dog.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)
+  end
 
   lg.setColor(1, 1, 1)
 end

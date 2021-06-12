@@ -28,13 +28,17 @@ function map.load()
 
   map.grass = 1
   map.bush = 2
+  map.water = 3
+  map.wall = 4
 
-  map.colors_n = 2
+  map.colors_n = 4
 
-  local grass_color = {0.3, 0.3, 0.3}
-  local bush_color = {0.4, 0.6, 0.1}
+  map.grass_color = {0.8, 0.8, 0.8}
+  map.bush_color = {0.7, 0.8, 0.5}
+  map.water_color = {0.6, 0.8, 1.0}
+  map.wall_color = {0.6, 0.6, 0.6}
 
-  map.types_colors = {grass_color, bush_color}
+  map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color}
 
 
   -- map.tiles = {}
