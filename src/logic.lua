@@ -131,6 +131,7 @@ function logic.prepare(guy, dog)
   dog.in_bush = false
 
   guy.crouching = false
+  guy.win = false
   dog.lost = false
   dog.next_lost = false
 
@@ -221,6 +222,12 @@ function logic.run(guy, dog, move)
   end
 
   prepare_visibility(dog)
+
+
+  if ((dog.pos.i == guy.pos.i and (dog.pos.j + 1 == guy.pos.j or dog.pos.j - 1 == guy.pos.j)) or
+    (dog.pos.j == guy.pos.j and (dog.pos.i + 1 == guy.pos.i or dog.pos.i - 1 == guy.pos.i))) then
+    guy.win = true
+  end
 end
 
 

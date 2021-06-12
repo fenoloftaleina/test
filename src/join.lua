@@ -111,6 +111,11 @@ function join.draw()
     lg.rectangle("line", join.dog.pos.x + map.offset_x + 5, join.dog.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)
   end
 
+  if join.guy.win then
+    lg.setColor(1, 0, 1, 0.4)
+    lg.rectangle("fill", 0, 0, 10000, 10000)
+  end
+
   lg.setColor(1, 1, 1)
 
   -- if join.dog.line then
