@@ -134,7 +134,36 @@ function logic.prepare(guy, dog)
   guy.in_bush = false
   dog.in_bush = false
 
-  guy.crouching = false
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  -- guy.crouching = false
+  guy.crouching = true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   guy.win = false
   dog.lost = false
   dog.sees_bone = false
@@ -284,7 +313,24 @@ function resolve_collisions(guy, dog)
   else
     dog.next_lost = false
     if dog.wannabe_lost and guy.crouching then
-      guy.crouching = false
+
+
+
+
+
+
+
+
+
+      -- guy.crouching = false
+
+
+
+
+
+
+
+
 
       dog.wannabe_lost = false
     end
