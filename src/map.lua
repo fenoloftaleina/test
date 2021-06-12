@@ -41,6 +41,16 @@ function map.load()
   map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color}
 
 
+  map.tiles_overlay = {}
+  for i=1,#map.tiles do
+    map.tiles_overlay[i] = {}
+
+    for j=1,#map.tiles[i] do
+      map.tiles_overlay[i][j] = {active = false, opacity = 0}
+    end
+  end
+
+
   -- map.tiles = {}
   --
   -- for i=1,10 do
@@ -76,6 +86,14 @@ function map.draw()
       local pos = {i = i, j = j}
       map.ij_to_xy(pos)
       lg.rectangle("fill", pos.x + map.offset_x, pos.y + map.offset_y, map.tile_size, map.tile_size)
+
+
+      if map.tiles_overlay[i][j].opacity > 0 then
+        lg.setColor(map.types_colors[tile][1] - 0.2, map.types_colors[tile][2] - 0.2, map.types_colors[tile][3] - 0.2, map.tiles_overlay[i][j].opacity)
+        local pos = {i = i, j = j}
+        map.ij_to_xy(pos)
+        lg.rectangle("fill", pos.x + map.offset_x, pos.y + map.offset_y, map.tile_size, map.tile_size)
+      end
     end
   end
 

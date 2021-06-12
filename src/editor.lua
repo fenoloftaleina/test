@@ -3,6 +3,8 @@ local editor = {}
 local lg = love.graphics
 local lk = love.keyboard
 
+local flux = require "libs/flux"
+
 local utils = require "utils"
 local world = require "world"
 local map = require "map"
@@ -26,6 +28,19 @@ function editor.update(dt)
     if not clicked_e then
       clicked_e = true
       map.editor_active = not map.editor_active
+
+
+
+
+      -- if map.editor_active then
+      --   map.tiles_overlay[1][1].active = true
+      --   flux.to(map.tiles_overlay[1][1], 1, {opacity = 1})
+      -- else
+      --   map.tiles_overlay[1][1].active = false
+      --   flux.to(map.tiles_overlay[1][1], 1, {opacity = 0})
+      -- end
+
+
     end
   elseif clicked_e then
     clicked_e = false
