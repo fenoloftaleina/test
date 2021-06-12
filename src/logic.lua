@@ -9,16 +9,97 @@ local world = require "world"
 local map = require "map"
 
 
+local sqrt = math.sqrt
+local floor = math.floor
+
+
+function prepare_visibility(dog)
+  local pos = {i = dog.pos.i, j = dog.pos.j}
+  map.ij_to_xy(pos)
+  local x1 = pos.x + (map.margin + map.tile_size) * 0.5
+  local y1 = pos.y + (map.margin + map.tile_size) * 0.5
+
+  local x2, y2, dx, dy, d, vx, vy, first_i, first_j, x, y, found, ci, cj
+
+  local found_along_the_way = {}
+
+  for i=1,#map.tiles do
+    for j=1,#map.tiles[1] do
+      map.tiles_overlay[i][j].next_active = false
+    end
+  end
+
+  for i=1,2 do
+    for j=1,2 do
+      if not map.tiles_overlay[i][j].next_active then
+        pos = {i = i, j = j}
+        map.ij_to_xy(pos)
+        x2 = pos.x + (map.margin + map.tile_size) * 0.5
+        y2 = pos.y + (map.margin + map.tile_size) * 0.5
+
+        dx = x2 - x1
+        dy = y2 - y1
+        d = sqrt(dx * dx + dy * dy)
+        vx = 1 / (d * 2)
+        vy = dy / (dx * d * 2)
+
+        found_along_the_way[#found_along_the_way] = {i = floor(x2 / (map.tile_size + map.margin)), j = floor(y2 / (map.tile_size + map.margin))}
+
+        x, y = x2 + vx, y2 + vy
+        found = false
+        while x < x1 or y < y1 do
+          ci = floor(x / (map.tile_size + map.margin))
+          cj = floor(y / (map.tile_size + map.margin))
+
+          if ci > 0 and cj > 0 and ci < #map.tiles and cj < #map.tiles[1] then
+            if map.tiles[ci][cj] == map.bush or map.tiles[ci][cj] == map.wall then
+              found = true
+            else
+              found_along_the_way[#found_along_the_way] = {i = ci, j = cj}
+            end
+          end
+
+          x = x + vx
+          y = y + vy
+        end
+
+        if found then
+          for k=1,#found_along_the_way do
+            map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].next_active = true
+            if not map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active then
+              map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active = true
+              flux.to(map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j], 1, {opacity = 1})
+            end
+          end
+        else
+          for k=1,#found_along_the_way do
+            if map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active then
+              map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active = false
+              flux.to(map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j], 1, {opacity = 0})
+            end
+          end
+        end
+      end
+    end
+  end
+
+  -- dog.line = {x1, y1, x2, y2}
+end
+
+
 function logic.prepare(guy, dog)
   map.ij_to_xy(guy.pos)
   map.ij_to_xy(dog.pos)
 
   guy.in_bush = false
   dog.in_bush = false
+
+
+  prepare_visibility(dog)
 end
 
 
-function collisions(guy, dog)
+function resolve_collisions(guy, dog)
   -- out of bounds
   if guy.next_pos.i < 1 or
     guy.next_pos.i > #map.tiles or
@@ -68,12 +149,8 @@ function logic.run(guy, dog, move)
   dog.next_pos.i = dog.pos.i + move.i
   dog.next_pos.j = dog.pos.j + move.j
 
-  local collided = collisions(guy, dog)
+  if resolve_collisions(guy, dog) then return end
 
-
-
-
-  if collided then return end
 
   guy.pos.i = guy.next_pos.i
   guy.pos.j = guy.next_pos.j
@@ -83,6 +160,9 @@ function logic.run(guy, dog, move)
   flux.to(guy.pos, 0.3, {x = guy.pos.i * (map.tile_size + map.margin), y = guy.pos.j * (map.tile_size + map.margin)})
 
   flux.to(dog.pos, 0.3, {x = dog.pos.i * (map.tile_size + map.margin), y = dog.pos.j * (map.tile_size + map.margin)})
+
+
+  prepare_visibility(dog)
 end
 
 

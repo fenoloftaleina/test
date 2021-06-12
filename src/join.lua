@@ -91,6 +91,10 @@ function join.draw()
   end
 
   lg.setColor(1, 1, 1)
+
+  -- if join.dog.line then
+  --   lg.line(join.dog.line[1] + map.offset_x, join.dog.line[2] + map.offset_y, join.dog.line[3] + map.offset_x, join.dog.line[4] + map.offset_y)
+  -- end
 end
 
 
