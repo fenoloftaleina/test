@@ -133,9 +133,75 @@ function logic.prepare(guy, dog)
   guy.crouching = false
   guy.win = false
   dog.lost = false
+  dog.sees_bone = false
   dog.next_lost = false
 
   logic.prepare_visibility(dog)
+end
+
+
+function resolve_bone_case(dog)
+  local i = dog.pos.i
+  local j = dog.pos.j
+
+  -- no bones seen from a bush
+  if map.tiles[i][j] == map.bush then return end
+
+  dog.sees_bone = false
+
+  i = dog.pos.i - 1
+  if i > 0 and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+    while i > 0 do
+      if map.tiles[i][j] == map.bone then
+        dog.next_pos.i = dog.pos.i - 1
+        dog.sees_bone = true
+        return
+      end
+
+      i = i - 1
+    end
+  end
+
+  i = dog.pos.i + 1
+  if i <= #map.tiles and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+    while i <= #map.tiles do
+      if map.tiles[i][j] == map.bone then
+        dog.next_pos.i = dog.pos.i + 1
+        dog.sees_bone = true
+        return
+      end
+
+      i = i + 1
+    end
+  end
+
+  i = dog.pos.i
+
+  j = dog.pos.j - 1
+  if j > 0 and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+    while j > 0 do
+      if map.tiles[i][j] == map.bone then
+        dog.next_pos.j = dog.pos.j - 1
+        dog.sees_bone = true
+        return
+      end
+
+      j = j - 1
+    end
+  end
+
+  j = dog.pos.j + 1
+  if j <= #map.tiles[1] and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+    while j <= #map.tiles[1] do
+      if map.tiles[i][j] == map.bone then
+        dog.next_pos.j = dog.pos.j + 1
+        dog.sees_bone = true
+        return
+      end
+
+      j = j + 1
+    end
+  end
 end
 
 
@@ -154,9 +220,17 @@ function resolve_collisions(guy, dog)
     return true
   end
 
+  -- bone
+  resolve_bone_case(dog)
+
   -- water
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.water or
     (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water) then
+
+    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water) and
+      dog.sees_bone then
+      dog.sees_bone = false
+    end
 
     return true
   end
@@ -164,6 +238,25 @@ function resolve_collisions(guy, dog)
   -- wall
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.wall or
     (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) then
+
+    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) and
+      dog.sees_bone then
+      dog.sees_bone = false
+    end
+
+    return true
+  end
+
+  -- cat
+  if not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.cat then
+    dog.next_pos.i = dog.pos.i
+    dog.next_pos.j = dog.pos.j
+
+    if dog.sees_bone then
+      dog.sees_bone = false
+    end
+  end
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.cat then
     return true
   end
 
@@ -202,8 +295,10 @@ function logic.run(guy, dog, move)
   guy.next_pos.i = guy.pos.i + move.i
   guy.next_pos.j = guy.pos.j + move.j
 
-  dog.next_pos.i = dog.pos.i + move.i
-  dog.next_pos.j = dog.pos.j + move.j
+  if not dog.sees_bone then
+    dog.next_pos.i = dog.pos.i + move.i
+    dog.next_pos.j = dog.pos.j + move.j
+  end
 
   if resolve_collisions(guy, dog) then return end
 
@@ -228,6 +323,11 @@ function logic.run(guy, dog, move)
   if ((dog.pos.i == guy.pos.i and (dog.pos.j + 1 == guy.pos.j or dog.pos.j - 1 == guy.pos.j)) or
     (dog.pos.j == guy.pos.j and (dog.pos.i + 1 == guy.pos.i or dog.pos.i - 1 == guy.pos.i))) then
     guy.win = true
+  end
+
+  if map.tiles[dog.pos.i][dog.pos.j] == map.bone then
+    dog.sees_bone = false
+    map.tiles[dog.pos.i][dog.pos.j] = map.grass
   end
 end
 

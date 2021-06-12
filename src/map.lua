@@ -51,8 +51,8 @@ function map.load(map_name)
   map.bush = 2
   map.water = 3
   map.wall = 4
-  map.bone = 4
-  map.cat = 4
+  map.bone = 5
+  map.cat = 6
 
   map.colors_n = 6
 
