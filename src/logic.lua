@@ -255,6 +255,10 @@ function resolve_collisions(guy, dog)
   -- bone
   resolve_bone_case(dog)
 
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.bone then
+    return true
+  end
+
   if not dog.lost and (
       dog.next_pos.i < 1 or
       dog.next_pos.i > #map.tiles or
