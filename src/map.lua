@@ -15,6 +15,25 @@ function map.ij_to_xy(pos)
 end
 
 
+function map.prepare()
+  map.hiders = {}
+
+  map.tiles_overlay = {}
+  for i=1,#map.tiles do
+    map.tiles_overlay[i] = {}
+
+    for j=1,#map.tiles[i] do
+      map.tiles_overlay[i][j] = {active = false, opacity = 0}
+
+      if map.tiles[i][j] == map.bush or map.tiles[i][j] == map.wall then
+        map.hiders[#map.hiders + 1] = {i = i, j = j}
+        map.ij_to_xy(map.hiders[#map.hiders])
+      end
+    end
+  end
+end
+
+
 function map.load()
   map.tiles = table.load("maps")
 
@@ -40,16 +59,7 @@ function map.load()
 
   map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color}
 
-
-  map.tiles_overlay = {}
-  for i=1,#map.tiles do
-    map.tiles_overlay[i] = {}
-
-    for j=1,#map.tiles[i] do
-      map.tiles_overlay[i][j] = {active = false, opacity = 0}
-    end
-  end
-
+  map.prepare()
 
   -- map.tiles = {}
   --

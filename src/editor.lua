@@ -86,6 +86,8 @@ function editor.update(dt)
 
       map.tiles[editor.pos.i][editor.pos.j] =
         (map.tiles[editor.pos.i][editor.pos.j] % map.colors_n) + 1
+
+      map.prepare()
     end
   elseif clicked_j then
     clicked_j = false

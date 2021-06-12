@@ -90,6 +90,11 @@ function join.draw()
     lg.rectangle("line", join.dog.pos.x + map.offset_x + 5, join.dog.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)
   end
 
+  if join.dog.lost then
+    lg.setColor(map.wall_color)
+    lg.rectangle("line", join.dog.pos.x + map.offset_x + 5, join.dog.pos.y + map.offset_y + 5, map.tile_size - 10, map.tile_size - 10)
+  end
+
   lg.setColor(1, 1, 1)
 
   -- if join.dog.line then

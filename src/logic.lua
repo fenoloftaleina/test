@@ -11,6 +11,61 @@ local map = require "map"
 
 local sqrt = math.sqrt
 local floor = math.floor
+local min = math.min
+local max = math.max
+
+
+function segmentVsAABB(x1, y1, x2, y2, l, t, r, b)
+  -- normalize segment
+  local dx, dy = x2 - x1, y2 - y1
+  local d = sqrt(dx*dx + dy*dy)
+  if d == 0 then
+    return false
+  end
+  local nx, ny = dx/d, dy/d
+  -- minimum and maximum intersection values
+  local tmin, tmax = 0, d
+  -- x-axis check
+  if nx == 0 then
+    if x1 < l or x1 > r then
+      return false
+    end
+  else
+    local t1, t2 = (l - x1)/nx, (r - x1)/nx
+    if t1 > t2 then
+      t1, t2 = t2, t1
+    end
+    tmin = max(tmin, t1)
+    tmax = min(tmax, t2)
+    if tmin > tmax then
+      return false
+    end
+  end
+  -- y-axis check
+  if ny == 0 then
+    if y1 < t or y1 > b then
+      return false
+    end
+  else
+    local t1, t2 = (t - y1)/ny, (b - y1)/ny
+    if t1 > t2 then
+      t1, t2 = t2, t1
+    end
+    tmin = max(tmin, t1)
+    tmax = min(tmax, t2)
+    if tmin > tmax then
+      return false
+    end
+  end
+  -- points of intersection
+  -- one point
+  local qx, qy = x1 + nx*tmin, y1 + ny*tmin
+  if tmin == tmax then
+    return true, qx, qy
+  end
+  -- two points
+  return true, qx, qy, x1 + nx*tmax, y1 + ny*tmax
+end
 
 
 function prepare_visibility(dog)
@@ -29,54 +84,35 @@ function prepare_visibility(dog)
     end
   end
 
-  for i=1,2 do
-    for j=1,2 do
-      if not map.tiles_overlay[i][j].next_active then
+  for i=1,#map.tiles do
+    for j=1,#map.tiles do
+      if map.tiles[i][j] == map.grass then
         pos = {i = i, j = j}
         map.ij_to_xy(pos)
         x2 = pos.x + (map.margin + map.tile_size) * 0.5
         y2 = pos.y + (map.margin + map.tile_size) * 0.5
 
-        dx = x2 - x1
-        dy = y2 - y1
-        d = sqrt(dx * dx + dy * dy)
-        vx = 1 / (d * 2)
-        vy = dy / (dx * d * 2)
 
-        found_along_the_way[#found_along_the_way] = {i = floor(x2 / (map.tile_size + map.margin)), j = floor(y2 / (map.tile_size + map.margin))}
+        local found = false
 
-        x, y = x2 + vx, y2 + vy
-        found = false
-        while x < x1 or y < y1 do
-          ci = floor(x / (map.tile_size + map.margin))
-          cj = floor(y / (map.tile_size + map.margin))
+        for k=1,#map.hiders do
+          found = segmentVsAABB(x1, y1, x2, y2,
+          map.hiders[k].x, map.hiders[k].y + map.tile_size, map.hiders[k].x + map.tile_size, map.hiders[k].y)
 
-          if ci > 0 and cj > 0 and ci < #map.tiles and cj < #map.tiles[1] then
-            if map.tiles[ci][cj] == map.bush or map.tiles[ci][cj] == map.wall then
-              found = true
-            else
-              found_along_the_way[#found_along_the_way] = {i = ci, j = cj}
-            end
+          if found then
+            break
           end
-
-          x = x + vx
-          y = y + vy
         end
 
         if found then
-          for k=1,#found_along_the_way do
-            map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].next_active = true
-            if not map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active then
-              map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active = true
-              flux.to(map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j], 1, {opacity = 1})
-            end
+          if not map.tiles_overlay[i][j].active then
+            map.tiles_overlay[i][j].active = true
+            flux.to(map.tiles_overlay[i][j], 1, {opacity = 1})
           end
         else
-          for k=1,#found_along_the_way do
-            if map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active then
-              map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j].active = false
-              flux.to(map.tiles_overlay[found_along_the_way[k].i][found_along_the_way[k].j], 1, {opacity = 0})
-            end
+          if map.tiles_overlay[i][j].active then
+            map.tiles_overlay[i][j].active = false
+            flux.to(map.tiles_overlay[i][j], 1, {opacity = 0})
           end
         end
       end
@@ -94,6 +130,9 @@ function logic.prepare(guy, dog)
   guy.in_bush = false
   dog.in_bush = false
 
+  guy.crouching = true
+  dog.lost = false
+  dog.next_lost = false
 
   prepare_visibility(dog)
 end
@@ -105,24 +144,25 @@ function resolve_collisions(guy, dog)
     guy.next_pos.i > #map.tiles or
     guy.next_pos.j < 1 or
     guy.next_pos.j > #map.tiles[1] or
-    dog.next_pos.i < 1 or
-    dog.next_pos.i > #map.tiles or
-    dog.next_pos.j < 1 or
-    dog.next_pos.j > #map.tiles[1] then
+    (not dog.lost and (
+      dog.next_pos.i < 1 or
+      dog.next_pos.i > #map.tiles or
+      dog.next_pos.j < 1 or
+      dog.next_pos.j > #map.tiles[1])) then
 
     return true
   end
 
   -- water
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.water or
-    map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water then
+    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water) then
 
     return true
   end
 
   -- wall
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.wall or
-    map.tiles[guy.next_pos.i][guy.next_pos.j] == map.wall then
+    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) then
     return true
   end
 
@@ -132,10 +172,21 @@ function resolve_collisions(guy, dog)
   else
     guy.in_bush = false
   end
-  if map.tiles[dog.next_pos.i][dog.next_pos.j] == map.bush then
-    dog.in_bush = true
+
+  if not dog.lost then
+    if map.tiles[dog.next_pos.i][dog.next_pos.j] == map.bush then
+      dog.in_bush = true
+    else
+      dog.in_bush = false
+    end
+  end
+
+
+  if guy.in_bush or (guy.crouching and map.tiles_overlay[guy.next_pos.i][guy.next_pos.j].active) then
+    dog.lost = true
+    dog.next_lost = true
   else
-    dog.in_bush = false
+    dog.next_lost = false
   end
 
   return false
@@ -154,15 +205,19 @@ function logic.run(guy, dog, move)
 
   guy.pos.i = guy.next_pos.i
   guy.pos.j = guy.next_pos.j
-  dog.pos.i = dog.next_pos.i
-  dog.pos.j = dog.next_pos.j
 
   flux.to(guy.pos, 0.3, {x = guy.pos.i * (map.tile_size + map.margin), y = guy.pos.j * (map.tile_size + map.margin)})
 
-  flux.to(dog.pos, 0.3, {x = dog.pos.i * (map.tile_size + map.margin), y = dog.pos.j * (map.tile_size + map.margin)})
+  if not dog.lost then
+    dog.pos.i = dog.next_pos.i
+    dog.pos.j = dog.next_pos.j
 
+    flux.to(dog.pos, 0.3, {x = dog.pos.i * (map.tile_size + map.margin), y = dog.pos.j * (map.tile_size + map.margin)})
+  elseif not dog.next_lost then
+    dog.lost = false
 
-  prepare_visibility(dog)
+    prepare_visibility(dog)
+  end
 end
 
 
