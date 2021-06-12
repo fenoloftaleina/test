@@ -44,6 +44,7 @@ local maps = {"map1", "map2", "map3"}
 local map_i = 1
 local b_clicked = false
 local n_clicked = false
+local r_clicked = false
 
 
 function love.load()
@@ -150,6 +151,17 @@ function semi_fixed_update(dt)
     end
   elseif n_clicked then
     n_clicked = false
+  end
+
+  if lk.isDown("r") then
+    if not r_clicked then
+      r_clicked = true
+
+      map.load(maps[map_i])
+      join.prepare()
+    end
+  elseif r_clicked then
+    r_clicked = false
   end
 
 

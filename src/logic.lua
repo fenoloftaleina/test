@@ -144,16 +144,17 @@ function resolve_bone_case(dog)
   local i = dog.pos.i
   local j = dog.pos.j
 
+  dog.sees_bone = false
+
   -- no bones seen from a bush
   if map.tiles[i][j] == map.bush then return end
 
-  dog.sees_bone = false
-
   i = dog.pos.i - 1
-  if i > 0 and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if i > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
     while i > 0 do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.i = dog.pos.i - 1
+        dog.next_pos.j = dog.pos.j
         dog.sees_bone = true
         return
       end
@@ -163,10 +164,11 @@ function resolve_bone_case(dog)
   end
 
   i = dog.pos.i + 1
-  if i <= #map.tiles and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if i <= #map.tiles and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
     while i <= #map.tiles do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.i = dog.pos.i + 1
+        dog.next_pos.j = dog.pos.j
         dog.sees_bone = true
         return
       end
@@ -178,10 +180,11 @@ function resolve_bone_case(dog)
   i = dog.pos.i
 
   j = dog.pos.j - 1
-  if j > 0 and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if j > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
     while j > 0 do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.j = dog.pos.j - 1
+        dog.next_pos.i = dog.pos.i
         dog.sees_bone = true
         return
       end
@@ -191,10 +194,11 @@ function resolve_bone_case(dog)
   end
 
   j = dog.pos.j + 1
-  if j <= #map.tiles[1] and not (map.tiles[i][j] == map.water or map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if j <= #map.tiles[1] and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
     while j <= #map.tiles[1] do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.j = dog.pos.j + 1
+        dog.next_pos.i = dog.pos.i
         dog.sees_bone = true
         return
       end
@@ -210,12 +214,7 @@ function resolve_collisions(guy, dog)
   if guy.next_pos.i < 1 or
     guy.next_pos.i > #map.tiles or
     guy.next_pos.j < 1 or
-    guy.next_pos.j > #map.tiles[1] or
-    (not dog.lost and (
-      dog.next_pos.i < 1 or
-      dog.next_pos.i > #map.tiles or
-      dog.next_pos.j < 1 or
-      dog.next_pos.j > #map.tiles[1])) then
+    guy.next_pos.j > #map.tiles[1] then
 
     return true
   end
@@ -223,15 +222,17 @@ function resolve_collisions(guy, dog)
   -- bone
   resolve_bone_case(dog)
 
-  -- water
-  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.water or
-    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water) then
+  if not dog.lost and (
+      dog.next_pos.i < 1 or
+      dog.next_pos.i > #map.tiles or
+      dog.next_pos.j < 1 or
+      dog.next_pos.j > #map.tiles[1]) then
 
-    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.water) and
-      dog.sees_bone then
-      dog.sees_bone = false
+      return true
     end
 
+  -- water
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.water then
     return true
   end
 
@@ -268,14 +269,6 @@ function resolve_collisions(guy, dog)
     guy.in_bush = false
   end
 
-  if not dog.lost then
-    if map.tiles[dog.next_pos.i][dog.next_pos.j] == map.bush then
-      dog.in_bush = true
-    else
-      dog.in_bush = false
-    end
-  end
-
 
   if guy.in_bush or (guy.crouching and map.tiles_overlay[guy.next_pos.i][guy.next_pos.j].active) then
     dog.lost = true
@@ -287,6 +280,17 @@ function resolve_collisions(guy, dog)
     end
   end
 
+
+  -- bush dog after guy visibility
+  if not dog.lost then
+    if map.tiles[dog.next_pos.i][dog.next_pos.j] == map.bush then
+      dog.in_bush = true
+    else
+      dog.in_bush = false
+    end
+  end
+
+
   return false
 end
 
@@ -295,10 +299,8 @@ function logic.run(guy, dog, move)
   guy.next_pos.i = guy.pos.i + move.i
   guy.next_pos.j = guy.pos.j + move.j
 
-  if not dog.sees_bone then
-    dog.next_pos.i = dog.pos.i + move.i
-    dog.next_pos.j = dog.pos.j + move.j
-  end
+  dog.next_pos.i = dog.pos.i + move.i
+  dog.next_pos.j = dog.pos.j + move.j
 
   if resolve_collisions(guy, dog) then return end
 
