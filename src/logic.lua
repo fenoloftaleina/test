@@ -72,11 +72,10 @@ function logic.prepare_visibility(dog)
   local pos = {i = dog.pos.i, j = dog.pos.j}
   map.ij_to_xy(pos)
   local x1 = pos.x + (map.margin + map.tile_size) * 0.5
-  local y1 = pos.y + (map.margin + map.tile_size) * 0.5
+  -- ugly fix
+  local y1 = pos.y + (map.margin + map.tile_size) * 0.5 + 0.01
 
-  local x2, y2, dx, dy, d, vx, vy, first_i, first_j, x, y, found, ci, cj
-
-  local found_along_the_way = {}
+  local x2, y2, found
 
   for i=1,#map.tiles do
     for j=1,#map.tiles[1] do
