@@ -3,6 +3,7 @@ local la = love.audio
 local lg = love.graphics
 local lk = love.keyboard
 local lm = love.mouse
+local lf = love.filesystem
 
 
 local utils = require "utils"
@@ -73,6 +74,16 @@ function love.load()
   map.load(maps[map_i])
   editor.prepare()
   join.prepare()
+
+
+  -- print(lf.getWorkingDirectory())
+
+  -- local a = lf.load("data.txt")
+  -- utils.tprint(a())
+
+  -- lf.write("fdsa", "xyz")
+  -- lf.write("asdf", "function () return " .. utils.tprint_str(map.tiles) .. " end")
+  -- local a = lf.load("asdf")
 
 
 

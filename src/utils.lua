@@ -1,5 +1,7 @@
 local utils = {}
 
+local lf = love.filesystem
+
 
 function utils.clamp(min, val, max)
     return math.max(min, math.min(val, max));
@@ -20,7 +22,7 @@ function utils.copy(obj, seen)
 end
 
 
-function tprint_str(tbl, indent)
+function utils.tprint_str(tbl, indent)
   if not indent then indent = 0 end
   local toprint = string.rep(" ", indent) .. "{\r\n"
   indent = indent + 2
@@ -36,7 +38,7 @@ function tprint_str(tbl, indent)
     elseif (type(v) == "string") then
       toprint = toprint .. "\"" .. v .. "\",\r\n"
     elseif (type(v) == "table") then
-      toprint = toprint .. tprint_str(v, indent + 2) .. ",\r\n"
+      toprint = toprint .. utils.tprint_str(v, indent + 2) .. ",\r\n"
     else
       toprint = toprint .. "\"" .. tostring(v) .. "\",\r\n"
     end
@@ -47,7 +49,7 @@ end
 
 
 function utils.tprint(tbl)
-  print(tprint_str(tbl))
+  print(utils.tprint_str(tbl))
 end
 
 
@@ -72,6 +74,14 @@ function utils.sgn(x)
     return 0
   end
 end
+
+
+-- function persist_table(name, t)
+  -- local file = lf.newFile(name)
+  -- file:open("w")
+  -- file:write("return " .. utils.tprint_str(t))
+  -- file:close()
+-- end
 
 
 do
@@ -158,6 +168,7 @@ do
 
    --// The Load Function
    function table.load( sfile )
+      -- local ftables,err = loadfile( sfile )
       local ftables,err = loadfile( sfile )
       if err then return _,err end
       local tables = ftables()
