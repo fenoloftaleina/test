@@ -273,31 +273,6 @@ function resolve_collisions(guy, dog)
     return true
   end
 
-  -- wall
-  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.wall or
-    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) then
-
-    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) and
-      dog.sees_bone then
-      dog.sees_bone = false
-    end
-
-    return true
-  end
-
-  -- cat
-  if not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.cat then
-    dog.next_pos.i = dog.pos.i
-    dog.next_pos.j = dog.pos.j
-
-    if dog.sees_bone then
-      dog.sees_bone = false
-    end
-  end
-  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.cat then
-    return true
-  end
-
   -- bush
   if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.bush then
     guy.in_bush = true
@@ -338,6 +313,31 @@ function resolve_collisions(guy, dog)
 
       dog.wannabe_lost = false
     end
+  end
+
+  -- wall
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.wall or
+    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) then
+
+    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.wall) and
+      dog.sees_bone then
+      dog.sees_bone = false
+    end
+
+    return true
+  end
+
+  -- cat
+  if not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.cat then
+    dog.next_pos.i = dog.pos.i
+    dog.next_pos.j = dog.pos.j
+
+    if dog.sees_bone then
+      dog.sees_bone = false
+    end
+  end
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.cat then
+    return true
   end
 
 
@@ -383,7 +383,8 @@ function logic.run(guy, dog, move)
 
 
   if ((dog.pos.i == guy.pos.i and (dog.pos.j + 1 == guy.pos.j or dog.pos.j - 1 == guy.pos.j)) or
-    (dog.pos.j == guy.pos.j and (dog.pos.i + 1 == guy.pos.i or dog.pos.i - 1 == guy.pos.i))) then
+    (dog.pos.j == guy.pos.j and (dog.pos.i + 1 == guy.pos.i or dog.pos.i - 1 == guy.pos.i))) or
+    (dog.pos.i == guy.pos.i and dog.pos.j == guy.pos.j) then
     guy.win = true
   end
 
