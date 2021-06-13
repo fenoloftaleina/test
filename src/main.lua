@@ -41,7 +41,7 @@ local bg_sprites = {}
 local bg_particles
 
 
-local maps = {"first1", "first2", "intro1", "simple_bushes", "simple_bushes_plus_cat", "bone_intro", "bone_cool", "map1", "map2", "expert1", "expert2", "expert3", "finale"}
+local maps = {"first1", "first2", "simple_bushes_plus_cat", "bone_intro", "simple_bushes_plus_bone", "bone_cool", "map1", "map2", "expert1", "expert2", "expert3", "finale"}
 local map_i = 1
 local b_clicked = false
 local n_clicked = false
