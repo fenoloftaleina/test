@@ -141,35 +141,7 @@ function logic.prepare(guy, dog)
   guy.in_bush = false
   dog.in_bush = false
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  -- guy.crouching = false
-  guy.crouching = true
-
-
-
-
-
-
-
-
-
-
-
-
-
+  guy.crouching = false
 
   guy.win = false
   dog.lost = false
@@ -289,9 +261,10 @@ function resolve_collisions(guy, dog)
   end
 
 
-  if guy.in_bush or (guy.crouching and map.tiles_overlay[guy.next_pos.i][guy.next_pos.j].active) then
+  if guy.in_bush or map.tiles_overlay[guy.next_pos.i][guy.next_pos.j].active then
     if not dog.sees_bone then
       dog.lost = true
+      guy.crouching = true
       dog.next_lost = true
     end
 
@@ -299,25 +272,7 @@ function resolve_collisions(guy, dog)
   else
     dog.next_lost = false
     if dog.wannabe_lost and guy.crouching then
-
-
-
-
-
-
-
-
-
-      -- guy.crouching = false
-
-
-
-
-
-
-
-
-
+      guy.crouching = false
       dog.wannabe_lost = false
     end
   end

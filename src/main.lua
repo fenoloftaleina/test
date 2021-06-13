@@ -38,7 +38,7 @@ local eye_animation
 
 local bg_sprites = {}
 
-local bg_particles
+-- local bg_particles
 
 
 local maps = {"first1", "first2", "simple_bushes_plus_cat", "map1", "bone_intro", "simple_bushes_plus_bone", "bone_cool", "map2", "expert1", "expert2", "expert3", "finale"}
@@ -46,6 +46,11 @@ local map_i = 1
 local b_clicked = false
 local n_clicked = false
 local r_clicked = false
+
+
+local main_theme = {}
+
+local sound = {volume = 0}
 
 
 function love.load()
@@ -90,14 +95,23 @@ function love.load()
   shader = shaders.example
 
   -- bg_particles = lg.newParticleSystem(bg_sprites.sprite_batches[1]:getTexture(), 10)
-  bg_particles = lg.newParticleSystem(lg.newImage("resources/images/bg_a_animation0000.png"), 10)
-  bg_particles:setParticleLifetime(1)
-  bg_particles:setEmissionRate(2)
+  -- bg_particles = lg.newParticleSystem(lg.newImage("resources/images/bg_a_animation0000.png"), 10)
+  -- bg_particles:setParticleLifetime(1)
+  -- bg_particles:setEmissionRate(2)
   -- local quads = bg_sprites.quads_data["bg_a_animation"].quad_objects
   -- bg_particles:setQuads(quads[1], quads[2], quads[3], quads[4], quads[5])
 
-  bg_particles:setLinearAcceleration(-100, -100, 100, 100)
-  bg_particles:setSpeed(50)
+  -- bg_particles:setLinearAcceleration(-100, -100, 100, 100)
+  -- bg_particles:setSpeed(50)
+
+
+  la.setVolume(0)
+
+  main_theme = la.newSource("resources/sounds/main.mp3", "static")
+  main_theme:setLooping(true)
+  main_theme:play()
+
+  flux.to(sound, 3, {volume = 1})
 end
 
 
@@ -116,6 +130,8 @@ local ticks_accumulator = 0
 
 function semi_fixed_update(dt)
   -- semi_fixed_updates = semi_fixed_updates + 1
+
+  la.setVolume(sound.volume)
 
   world.t = world.t + dt
 
@@ -179,7 +195,7 @@ function semi_fixed_update(dt)
   -- lsp.add_animation(spines, eye_animation, 1350, 650, 0.25, 0.25)
 
 
-  bg_particles:update(dt)
+  -- bg_particles:update(dt)
 end
 
 
