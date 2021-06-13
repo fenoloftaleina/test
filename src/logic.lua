@@ -73,7 +73,7 @@ function logic.prepare_visibility(dog)
   map.ij_to_xy(pos)
   local x1 = pos.x + (map.margin + map.tile_size) * 0.5
   -- ugly fix
-  local y1 = pos.y + (map.margin + map.tile_size) * 0.5 + 0.01
+  local y1 = pos.y + (map.margin + map.tile_size) * 0.5
 
   local x2, y2, found
 
@@ -98,7 +98,15 @@ function logic.prepare_visibility(dog)
           if map.hiders[k].i == dog.pos.i and map.hiders[k].j == dog.pos.j then
             -- skip
           else
-            found = segmentVsAABB(x1, y1, x2, y2,
+            local temp_x1 = x1
+            local temp_y1 = y1
+            if dog.pos.i == map.hiders[k].i then
+              temp_x1 = temp_x1 - 0.01
+            end
+            if dog.pos.j == map.hiders[k].j then
+              temp_y1 = temp_y1 + 0.01
+            end
+            found = segmentVsAABB(temp_x1, temp_y1, x2, y2,
             map.hiders[k].x, map.hiders[k].y + map.tile_size, map.hiders[k].x + map.tile_size, map.hiders[k].y)
 
             if found then
