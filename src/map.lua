@@ -53,6 +53,7 @@ function map.load(map_name)
   map.wall = 4
   map.bone = 5
   map.cat = 6
+  map.empty = 7
 
   map.colors_n = 6
 
@@ -62,8 +63,9 @@ function map.load(map_name)
   map.wall_color = {0.5, 0.5, 0.5}
   map.bone_color = {1, 1, 1}
   map.cat_color = {0.6, 0.6, 0.5}
+  map.empty_color = {0.9, 0.9, 0.9}
 
-  map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color, map.bone_color, map.cat_color}
+  map.types_colors = {map.grass_color, map.bush_color, map.water_color, map.wall_color, map.bone_color, map.cat_color, map.empty_color}
 
   map.prepare()
 

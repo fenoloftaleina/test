@@ -16,6 +16,7 @@ local clicked_j = false
 local clicked_k = false
 local clicked_t = false
 local clicked_y = false
+local clicked_m = false
 local step_left = false
 local step_right = false
 local step_up = false
@@ -109,6 +110,19 @@ function editor.update(dt)
     end
   elseif clicked_k then
     clicked_k = false
+  end
+
+  if lk.isDown("m") then
+    if not clicked_m then
+      clicked_m = true
+
+      map.tiles[editor.pos.i][editor.pos.j] = map.empty
+
+      map.prepare()
+      logic.prepare_visibility(join.dog)
+    end
+  elseif clicked_m then
+    clicked_m = false
   end
 
   if lk.isDown("t") then

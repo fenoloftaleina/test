@@ -183,7 +183,7 @@ function resolve_bone_case(dog)
   -- if map.tiles[i][j] == map.bush then return end
 
   i = dog.pos.i - 1
-  if i > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if i > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat or map.tiles[i][j] == map.empty) then
     while i > 0 do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.i = dog.pos.i - 1
@@ -197,7 +197,7 @@ function resolve_bone_case(dog)
   end
 
   i = dog.pos.i + 1
-  if i <= #map.tiles and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if i <= #map.tiles and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat or map.tiles[i][j] == map.empty) then
     while i <= #map.tiles do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.i = dog.pos.i + 1
@@ -213,7 +213,7 @@ function resolve_bone_case(dog)
   i = dog.pos.i
 
   j = dog.pos.j - 1
-  if j > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if j > 0 and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat or map.tiles[i][j] == map.empty) then
     while j > 0 do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.j = dog.pos.j - 1
@@ -227,7 +227,7 @@ function resolve_bone_case(dog)
   end
 
   j = dog.pos.j + 1
-  if j <= #map.tiles[1] and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat) then
+  if j <= #map.tiles[1] and not (map.tiles[i][j] == map.wall or map.tiles[i][j] == map.cat or map.tiles[i][j] == map.empty) then
     while j <= #map.tiles[1] do
       if map.tiles[i][j] == map.bone then
         dog.next_pos.j = dog.pos.j + 1
@@ -313,6 +313,18 @@ function resolve_collisions(guy, dog)
 
       dog.wannabe_lost = false
     end
+  end
+
+  -- empty
+  if map.tiles[guy.next_pos.i][guy.next_pos.j] == map.empty or
+    (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.empty) then
+
+    if (not dog.lost and map.tiles[dog.next_pos.i][dog.next_pos.j] == map.empty) and
+      dog.sees_bone then
+      dog.sees_bone = false
+    end
+
+    return true
   end
 
   -- wall
